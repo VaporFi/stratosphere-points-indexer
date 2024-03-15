@@ -1,5 +1,5 @@
 {
-  "name": "stratosphere-points",
+  "name": "stratosphere-points-indexer",
   "version": "0.0.1",
   "private": false,
   "type": "module",
@@ -8,7 +8,9 @@
     "start": "ponder start",
     "codegen": "ponder codegen",
     "lint": "eslint .",
-    "typecheck": "tsc"
+    "typecheck": "tsc",
+    "docker:build": "docker build -t stratosphere-points-indexer .",
+    "docker:run": "docker run --env-file .env -p 3000:3000 stratosphere-points-indexer"
   },
   "dependencies": {
     "@ponder/core": "^0.2.6",

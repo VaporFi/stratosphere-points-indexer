@@ -8,6 +8,10 @@ import { addresses } from "./src/config/constants";
 import { LiquidMiningAbi } from "./abis/LiquidMiningAbi";
 import { VapeStakingAbi } from "./abis/VapeStakingAbi";
 
+const maxBlockRange = process.env.MAX_BLOCK_RANGE
+  ? parseInt(process.env.MAX_BLOCK_RANGE)
+  : 2_000;
+
 export default createConfig({
   networks: {
     avalanche: {
@@ -26,6 +30,7 @@ export default createConfig({
         avalanche: {
           address: addresses.DexAggregator?.avalanche,
           startBlock: 42346292,
+          maxBlockRange,
         },
       },
     },
@@ -35,6 +40,7 @@ export default createConfig({
         avalanche: {
           address: addresses.Stratosphere?.avalanche,
           startBlock: 20310567,
+          maxBlockRange,
         },
       },
     },
@@ -45,6 +51,7 @@ export default createConfig({
         avalanche: {
           address: addresses.LiquidMining?.avalanche,
           startBlock: 32271032,
+          maxBlockRange,
         },
       },
     },
@@ -55,6 +62,7 @@ export default createConfig({
         avalanche: {
           address: addresses.VapeStaking?.avalanche,
           startBlock: 32271032,
+          maxBlockRange,
         },
       },
     },
