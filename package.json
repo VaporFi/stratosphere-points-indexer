@@ -7,7 +7,7 @@
     "dev": "ponder dev",
     "start": "ponder start",
     "codegen": "ponder codegen",
-    "lint": "eslint . --ext .ts",
+    "lint": "eslint . --ext .ts --max-warnings 0",
     "typecheck": "tsc --noEmit",
     "docker:build": "docker build -t stratosphere-points-indexer .",
     "docker:run": "docker run --env-file .env -p 3000:3000 stratosphere-points-indexer"
