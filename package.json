@@ -8,7 +8,7 @@
     "start": "ponder start",
     "codegen": "ponder codegen",
     "lint": "eslint .",
-    "typecheck": "tsc",
+    "typecheck": "tsc --noEmit",
     "docker:build": "docker build -t stratosphere-points-indexer .",
     "docker:run": "docker run --env-file .env -p 3000:3000 stratosphere-points-indexer"
   },
