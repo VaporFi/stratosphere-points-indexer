@@ -27,7 +27,7 @@ export async function getOrCreateUserData(
 
   // Attempt to find existing user data
   let userHistory = await UserHistory.findUnique({
-    id: address,
+    id: `${address}-${chainId}`,
   });
 
   // Retrieve the main wallet associated with the provided tokenId
