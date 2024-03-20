@@ -5,6 +5,7 @@ import {
   BIGINT_ONE,
   BIGINT_TEN_THOUSAND,
   BIGINT_THOUSAND,
+  BIGINT_ZERO,
   MINIMUM_POINTS,
   assets,
   chainId,
@@ -39,7 +40,7 @@ ponder.on("LiquidMining:Deposit", async ({ event, context }) => {
   const { seasonId, user: userAddress, amount } = event.args;
   const tokenId = await getTokenId(userAddress, context);
 
-  if (tokenId === 0n) {
+  if (tokenId === BIGINT_ZERO) {
     return;
   }
 
@@ -187,6 +188,10 @@ ponder.on("VapeStaking:Deposit", async ({ event, context }) => {
   const { user: userAddress } = event.args;
   const tokenId = await getTokenId(userAddress, context);
 
+  if (tokenId === BIGINT_ZERO) {
+    return;
+  }
+
   let vapeStakingData = await VapeStaking.findUnique({
     id: "vape-staking",
   });
@@ -246,7 +251,7 @@ ponder.on("DexAggregator:RouterSwap", async ({ event, context }) => {
 
   const tokenId = await getTokenId(userAddress, context);
 
-  if (tokenId.toString() === "0") {
+  if (tokenId === BIGINT_ZERO) {
     return;
   }
 
