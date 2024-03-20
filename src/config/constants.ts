@@ -85,7 +85,7 @@ export const deployedBlockTimestamps = {
  */
 export const addresses: AddressMap = {
   Stratosphere: {
-    [Chains.AVALANCHE]: "0x08e287adcf9bf6773a87e1a278aa9042bef44b60",
+    [Chains.AVALANCHE]: "0x08e287adCf9BF6773a87e1a278aa9042BEF44b60",
   },
 
   DexAggregator: {

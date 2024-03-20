@@ -39,6 +39,10 @@ ponder.on("LiquidMining:Deposit", async ({ event, context }) => {
   const { seasonId, user: userAddress, amount } = event.args;
   const tokenId = await getTokenId(userAddress, context);
 
+  if (tokenId === 0n) {
+    return;
+  }
+
   let liquidMiningData = await LiquidMining.findUnique({
     id: seasonId,
   });
