@@ -7,6 +7,7 @@ import {
   BIGINT_THOUSAND,
   MINIMUM_POINTS,
   assets,
+  chainId,
   pointsMap,
 } from "./config/constants";
 
@@ -14,17 +15,18 @@ ponder.on("Stratosphere:Transfer", async ({ event, context }) => {
   const { Points } = context.db;
   const { to: userAddress, tokenId } = event.args;
   const { hash } = event.transaction;
+  const { chainId } = context.network;
 
   await getOrCreateUserData(context, tokenId, userAddress);
 
   await Points.create({
-    id: hash,
+    id: `${hash}-stratosphere-enrollment`,
     data: {
-      userDataId: `${userAddress}-${context.network.chainId}`,
-      userHistoryId: `${userAddress}-${context.network.chainId}`,
+      userDataId: `${userAddress}-${chainId}`,
+      userHistoryId: `${userAddress}-${chainId}`,
       pointsSource: "stratosphere_enrollment",
       points: pointsMap.Enrollment,
-      chainId: context.network.chainId,
+      chainId: chainId,
       timestamp: event.block.timestamp,
     },
   });
@@ -33,6 +35,7 @@ ponder.on("Stratosphere:Transfer", async ({ event, context }) => {
 ponder.on("LiquidMining:Deposit", async ({ event, context }) => {
   const { Points, UserHistory, LiquidMining } = context.db;
   const { hash } = event.transaction;
+  const { chainId } = context.network;
   const { seasonId, user: userAddress, amount } = event.args;
   const tokenId = await getTokenId(userAddress, context);
 
@@ -49,46 +52,47 @@ ponder.on("LiquidMining:Deposit", async ({ event, context }) => {
     });
 
     await Points.create({
-      id: hash,
+      id: `${hash}-liquid-mining-first-wallet`,
       data: {
-        userDataId: `${userAddress}-${context.network.chainId}`,
-        userHistoryId: `${userAddress}-${context.network.chainId}`,
+        userDataId: `${userAddress}-${chainId}`,
+        userHistoryId: `${userAddress}-${chainId}`,
         pointsSource: `liquid_mining_first_wallet_season_${Number(seasonId)}`,
         points: pointsMap.FirstWalletInVPNDLM,
-        chainId: context.network.chainId,
+        chainId: chainId,
         timestamp: event.block.timestamp,
       },
     });
   }
 
   const userData = await getOrCreateUserData(context, tokenId, userAddress);
+
   if (userData.LMSeasons.length === 0) {
     await Points.create({
-      id: hash,
+      id: `${hash}-liquid-mining-first-deposit`,
       data: {
-        userDataId: `${userAddress}-${context.network.chainId}`,
-        userHistoryId: `${userAddress}-${context.network.chainId}`,
-        pointsSource: "liquid-mining_first_deposit",
+        userDataId: `${userAddress}-${chainId}`,
+        userHistoryId: `${userAddress}-${chainId}`,
+        pointsSource: "liquid_mining_first_deposit",
         points: pointsMap.FirstDepositInVPNDLM,
-        chainId: context.network.chainId,
+        chainId: chainId,
         timestamp: event.block.timestamp,
       },
     });
 
     await Points.create({
-      id: hash,
+      id: `${hash}-liquid-mining-one-season`,
       data: {
-        userDataId: `${userAddress}-${context.network.chainId}`,
-        userHistoryId: `${userAddress}-${context.network.chainId}`,
-        pointsSource: "liquid-mining_one_season",
+        userDataId: `${userAddress}-${chainId}`,
+        userHistoryId: `${userAddress}-${chainId}`,
+        pointsSource: "liquid_mining_one_season",
         points: pointsMap.OneSeasonVPNDLMLock,
-        chainId: context.network.chainId,
+        chainId: chainId,
         timestamp: event.block.timestamp,
       },
     });
 
     await UserHistory.update({
-      id: userAddress,
+      id: `${userAddress}-${chainId}`,
       data: {
         LMSeasons: [seasonId],
         LMOneSeasonPointsClaimed: true,
@@ -98,7 +102,7 @@ ponder.on("LiquidMining:Deposit", async ({ event, context }) => {
 
   if (!userData.LMSeasons.includes(seasonId)) {
     await UserHistory.update({
-      id: userAddress,
+      id: `${userAddress}-${chainId}`,
       data: ({ current }) => ({
         LMSeasons: [...current.LMSeasons, seasonId],
       }),
@@ -110,19 +114,19 @@ ponder.on("LiquidMining:Deposit", async ({ event, context }) => {
     !userData.LMThreeSeasonsPointsClaimed
   ) {
     await Points.create({
-      id: hash,
+      id: `${hash}-liquid-mining-three-seasons`,
       data: {
-        userDataId: `${userAddress}-${context.network.chainId}`,
-        userHistoryId: `${userAddress}-${context.network.chainId}`,
-        pointsSource: "liquid-mining_three_seasons",
+        userDataId: `${userAddress}-${chainId}`,
+        userHistoryId: `${userAddress}-${chainId}`,
+        pointsSource: "liquid_mining_three_seasons",
         points: pointsMap.ThreeSeasonVPNDLMLock,
-        chainId: context.network.chainId,
+        chainId: chainId,
         timestamp: event.block.timestamp,
       },
     });
 
     await UserHistory.update({
-      id: userAddress,
+      id: `${userAddress}-${chainId}`,
       data: {
         LMThreeSeasonsPointsClaimed: true,
       },
@@ -131,19 +135,19 @@ ponder.on("LiquidMining:Deposit", async ({ event, context }) => {
 
   if (userData.LMSeasons.length === 6 && !userData.LMSixSeasonsPointsClaimed) {
     await Points.create({
-      id: hash,
+      id: `${hash}-liquid-mining-six-seasons`,
       data: {
-        userDataId: `${userAddress}-${context.network.chainId}`,
-        userHistoryId: `${userAddress}-${context.network.chainId}`,
-        pointsSource: "liquid-mining_six_seasons",
+        userDataId: `${userAddress}-${chainId}`,
+        userHistoryId: `${userAddress}-${chainId}`,
+        pointsSource: "liquid_mining_six_seasons",
         points: pointsMap.SixSeasonVPNDLMLock,
-        chainId: context.network.chainId,
+        chainId: chainId,
         timestamp: event.block.timestamp,
       },
     });
 
     await UserHistory.update({
-      id: userAddress,
+      id: `${userAddress}-${chainId}`,
       data: {
         LMSixSeasonsPointsClaimed: true,
       },
@@ -152,19 +156,19 @@ ponder.on("LiquidMining:Deposit", async ({ event, context }) => {
 
   if (userData.LMSeasons.length === 12 && !userData.LMOneYearPointsClaimed) {
     await Points.create({
-      id: hash,
+      id: `${hash}-liquid-mining-twelve-seasons`,
       data: {
-        userDataId: `${userAddress}-${context.network.chainId}`,
-        userHistoryId: `${userAddress}-${context.network.chainId}`,
-        pointsSource: "liquid-mining_twelve_seasons",
+        userDataId: `${userAddress}-${chainId}`,
+        userHistoryId: `${userAddress}-${chainId}`,
+        pointsSource: "liquid_mining_twelve_seasons",
         points: pointsMap.OneYearVPNDLMLock,
-        chainId: context.network.chainId,
+        chainId: chainId,
         timestamp: event.block.timestamp,
       },
     });
 
     await UserHistory.update({
-      id: userAddress,
+      id: `${userAddress}-${chainId}`,
       data: {
         LMOneYearPointsClaimed: true,
       },
@@ -175,6 +179,7 @@ ponder.on("LiquidMining:Deposit", async ({ event, context }) => {
 ponder.on("VapeStaking:Deposit", async ({ event, context }) => {
   const { Points, UserHistory, VapeStaking } = context.db;
   const { hash } = event.transaction;
+  const { chainId } = context.network;
   const { user: userAddress } = event.args;
   const tokenId = await getTokenId(userAddress, context);
 
@@ -192,13 +197,13 @@ ponder.on("VapeStaking:Deposit", async ({ event, context }) => {
     });
 
     await Points.create({
-      id: hash,
+      id: `${hash}-vape-staking-first-wallet`,
       data: {
-        userDataId: `${userAddress}-${context.network.chainId}`,
-        userHistoryId: `${userAddress}-${context.network.chainId}`,
-        pointsSource: "vape-staking_first_wallet",
+        userDataId: `${userAddress}-${chainId}`,
+        userHistoryId: `${userAddress}-${chainId}`,
+        pointsSource: "vape_staking_first_wallet",
         points: pointsMap.FirstWalletInVAPELM,
-        chainId: context.network.chainId,
+        chainId: chainId,
         timestamp: event.block.timestamp,
       },
     });
@@ -208,19 +213,19 @@ ponder.on("VapeStaking:Deposit", async ({ event, context }) => {
 
   if (!userData.depositInVS) {
     await Points.create({
-      id: hash,
+      id: `${hash}-liquid-mining-first-deposit`,
       data: {
-        userDataId: `${userAddress}-${context.network.chainId}`,
-        userHistoryId: `${userAddress}-${context.network.chainId}`,
-        pointsSource: "vape-staking_first_deposit",
+        userDataId: `${userAddress}-${chainId}`,
+        userHistoryId: `${userAddress}-${chainId}`,
+        pointsSource: "vape_staking_first_deposit",
         points: pointsMap.FirstDepositInVAPELM,
-        chainId: context.network.chainId,
+        chainId: chainId,
         timestamp: event.block.timestamp,
       },
     });
 
     await UserHistory.update({
-      id: userAddress,
+      id: `${userAddress}-${chainId}`,
       data: {
         depositInVS: true,
       },
@@ -251,11 +256,11 @@ ponder.on("DexAggregator:RouterSwap", async ({ event, context }) => {
   // If we are unable to find a path, usdValueOfTrade is Zero and we don't want to index that
   if (usdValueOfTrade >= MINIMUM_POINTS) {
     await Points.create({
-      id: hash,
+      id: `${hash}-dex-aggregator-swap`,
       data: {
-        userDataId: `${userAddress}-${context.network.chainId}`,
-        userHistoryId: `${userAddress}-${context.network.chainId}`,
-        pointsSource: "dex-aggregator_swap",
+        userDataId: `${userAddress}-${chainId}`,
+        userHistoryId: `${userAddress}-${chainId}`,
+        pointsSource: "dex_aggregator_swap",
         points: usdValueOfTrade,
         chainId: chainId,
         timestamp: event.block.timestamp,
@@ -281,11 +286,11 @@ ponder.on("DexAggregator:RouterSwap", async ({ event, context }) => {
     !userData.first1kSwaps
   ) {
     await Points.create({
-      id: hash,
+      id: `${hash}-dex-aggregator-1k-swaps`,
       data: {
-        userDataId: `${userAddress}-${context.network.chainId}`,
-        userHistoryId: `${userAddress}-${context.network.chainId}`,
-        pointsSource: "dex-aggregator_1k_swaps",
+        userDataId: `${userAddress}-${chainId}`,
+        userHistoryId: `${userAddress}-${chainId}`,
+        pointsSource: "dex_aggregator_1k_swaps",
         points: pointsMap.ThousandSwaps,
         chainId: chainId,
         timestamp: event.block.timestamp,
@@ -293,7 +298,7 @@ ponder.on("DexAggregator:RouterSwap", async ({ event, context }) => {
     });
 
     await UserHistory.update({
-      id: userAddress,
+      id: `${userAddress}-${chainId}`,
       data: {
         first1kSwaps: true,
       },
@@ -306,11 +311,11 @@ ponder.on("DexAggregator:RouterSwap", async ({ event, context }) => {
     !userData.first10kSwaps
   ) {
     await Points.create({
-      id: hash,
+      id: `${hash}-dex-aggregator-10k-swaps`,
       data: {
-        userDataId: `${userAddress}-${context.network.chainId}`,
-        userHistoryId: `${userAddress}-${context.network.chainId}`,
-        pointsSource: "dex-aggregator_10k_swaps",
+        userDataId: `${userAddress}-${chainId}`,
+        userHistoryId: `${userAddress}-${chainId}`,
+        pointsSource: "dex_aggregator_10k_swaps",
         points: pointsMap.TenThousandSwaps,
         chainId: chainId,
         timestamp: event.block.timestamp,
@@ -318,7 +323,7 @@ ponder.on("DexAggregator:RouterSwap", async ({ event, context }) => {
     });
 
     await UserHistory.update({
-      id: userAddress,
+      id: `${userAddress}-${chainId}`,
       data: {
         first10kSwaps: true,
       },
@@ -331,11 +336,11 @@ ponder.on("DexAggregator:RouterSwap", async ({ event, context }) => {
     !userData.first100kSwaps
   ) {
     await Points.create({
-      id: hash,
+      id: `${hash}-dex-aggregator-100k-swaps`,
       data: {
-        userDataId: `${userAddress}-${context.network.chainId}`,
-        userHistoryId: `${userAddress}-${context.network.chainId}`,
-        pointsSource: "dex-aggregator_100k_swaps",
+        userDataId: `${userAddress}-${chainId}`,
+        userHistoryId: `${userAddress}-${chainId}`,
+        pointsSource: "dex_aggregator_100k_swaps",
         points: pointsMap.HundredThousandSwaps,
         chainId: chainId,
         timestamp: event.block.timestamp,
@@ -343,7 +348,7 @@ ponder.on("DexAggregator:RouterSwap", async ({ event, context }) => {
     });
 
     await UserHistory.update({
-      id: userAddress,
+      id: `${userAddress}-${chainId}`,
       data: {
         first100kSwaps: true,
       },
