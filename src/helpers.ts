@@ -120,13 +120,23 @@ export async function getTokenId(
 ): Promise<bigint> {
   const { client, network } = context;
 
-  const tokenId = await client.readContract({
-    abi: StratosphereAbi,
-    address: addresses.Stratosphere![network.name] as `0x${string}`,
-    functionName: "tokenIdOf",
-    args: [address],
-  });
+  let tokenId = 0n;
+  let revertedAddresses = [];
 
+  try {
+    tokenId = await client.readContract({
+      abi: StratosphereAbi,
+      address: addresses.Stratosphere![network.name] as `0x${string}`,
+      functionName: "tokenIdOf",
+      args: [address],
+    });
+  } catch (e) {
+    revertedAddresses.push(address);
+  }
+
+  if (revertedAddresses.length > 0) {
+    console.log(revertedAddresses);
+  }
   return tokenId;
 }
 

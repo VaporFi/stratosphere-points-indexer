@@ -38,7 +38,7 @@ const generateLMSeasonEnum = (numSeasons: number) => {
  * - "liquid_mining_twelve_seasons": Indexes twelve seasons in Liquid Mining (1000 * 10^6 points)
  * - ...generateLMSeasonEnum(120): Indexes first wallet in a Liquid Mining new season (500 * 10^6 points)
  */
-const PointsSource = [
+const pointsSource = [
   "stratosphere_enrollment",
   "dex_aggregator_swap",
   "dex_aggregator_1k_swaps",
@@ -55,7 +55,7 @@ const PointsSource = [
 ];
 
 export default createSchema((p) => ({
-  PointsSource: p.createEnum(PointsSource),
+  PointsSource: p.createEnum(pointsSource),
   Points: p.createTable({
     id: p.string(),
     // Use enum for points source
