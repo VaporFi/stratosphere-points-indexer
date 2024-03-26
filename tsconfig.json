@@ -21,6 +21,6 @@
     // Skip type checking for node modules
     "skipLibCheck": true
   },
-  "include": ["./**/*.ts", "src/sync/merkle.cjs", "src/sync/utils.cj, "src/sync/utils.cjs"s"],
+  "include": ["./**/*.ts", "src/sync/merkle.cjs", "src/sync/utils.cj"],
   "exclude": ["node_modules"]
 }
