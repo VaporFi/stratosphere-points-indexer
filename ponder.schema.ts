@@ -115,4 +115,13 @@ export default createSchema((p) => ({
     firstWallet: p.string(),
     txnHash: p.string(),
   }),
+
+  // @dev: Id is the tokenId + chainId
+  TokenIdData: p.createTable({
+    id: p.string(),
+    tokenId: p.bigint(),
+    chainId: p.int(),
+    pointsClaimed: p.bigint(),
+    pointsSpent: p.bigint(),
+  }),
 }));

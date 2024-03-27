@@ -1,5 +1,10 @@
 import { ponder } from "@/generated";
-import { getOrCreateUserData, queryQuote, getTokenId } from "./helpers";
+import {
+  getOrCreateUserData,
+  queryQuote,
+  getTokenId,
+  getOrCreateTokenIdData,
+} from "./helpers";
 import {
   BIGINT_HUNDRED_THOUSAND,
   BIGINT_ONE,
@@ -363,4 +368,19 @@ ponder.on("DexAggregator:RouterSwap", async ({ event, context }) => {
       },
     });
   }
+});
+
+ponder.on("RewardsController:ClaimPoints", async ({ event, context }) => {
+  const { tokenId, points } = event.args;
+  await getOrCreateTokenIdData(context, tokenId);
+
+  const { TokenIdData } = context.db;
+  const { chainId } = context.network;
+
+  await TokenIdData.update({
+    id: `${tokenId}-${chainId}`,
+    data: ({ current }) => ({
+      pointsClaimed: current.pointsClaimed + points,
+    }),
+  });
 });

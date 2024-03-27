@@ -2,6 +2,7 @@ import { type Context } from "@/generated";
 import {
   QueryWithAmountIn,
   Quote,
+  TokenIdData,
   UserHistory,
   UserLMData,
   UserVapeStakingData,
@@ -209,4 +210,36 @@ export async function queryVapeStakingData(
     });
 
   return response;
+}
+
+/**
+ * Retrieves or creates a TokenIdData object based on the provided tokenId and context.
+ * @param context - The execution context.
+ * @param tokenId - The token ID.
+ * @returns A Promise that resolves to the TokenIdData object.
+ */
+export async function getOrCreateTokenIdData(
+  context: Context,
+  tokenId: bigint
+): Promise<TokenIdData> {
+  const { TokenIdData } = context.db;
+  const { chainId } = context.network;
+
+  let tokenIdData = await TokenIdData.findUnique({
+    id: `${tokenId}-${chainId}`,
+  });
+
+  if (!tokenIdData) {
+    tokenIdData = await TokenIdData.create({
+      id: `${tokenId}-${chainId}`,
+      data: {
+        tokenId: tokenId,
+        chainId: chainId,
+        pointsClaimed: BIGINT_ZERO,
+        pointsSpent: BIGINT_ZERO,
+      },
+    });
+  }
+
+  return tokenIdData;
 }

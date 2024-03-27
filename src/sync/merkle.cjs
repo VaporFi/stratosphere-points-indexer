@@ -4,8 +4,8 @@ const { MerkleTree } = require("merkletreejs");
 
 const getCombinedPoints = require("./utils.cjs");
 
-async function getMerkleRoot() {
-  const data = await getCombinedPoints();
+async function getMerkleRoot(chainId) {
+  const data = await getCombinedPoints(chainId);
   const leaves = Object.keys(data).map((tokenId) => {
     return encodeLeaf(tokenId, data[tokenId]);
   });
@@ -21,4 +21,4 @@ function encodeLeaf(tokenId, points) {
   return leaf;
 }
 
-getMerkleRoot().catch((error) => console.error(error));
+getMerkleRoot(43114).catch((error) => console.error(error));

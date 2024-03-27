@@ -77,6 +77,7 @@ export const deployedBlockTimestamps = {
     DexAggregator: 20308160,
     LiquidMining: 32271032,
     VapeStaking: 33291048,
+    RewardsController: 33291048,
   },
 };
 
@@ -96,6 +97,9 @@ export const addresses: AddressMap = {
   },
   VapeStaking: {
     [Chains.AVALANCHE]: "0x1C9Cba0CEc8aD45f75D5F5bdb0c539AcB55B8D94",
+  },
+  RewardsController: {
+    [Chains.AVALANCHE]: "0x2A8cE9F8Df3c4C1f4b8b3f1bE5D1Df0E7b8DfA4E", // Change this
   },
 };
 
