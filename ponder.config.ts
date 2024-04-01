@@ -7,6 +7,7 @@ import { addresses } from "./src/config/constants";
 
 import { LiquidMiningAbi } from "./abis/LiquidMiningAbi";
 import { VapeStakingAbi } from "./abis/VapeStakingAbi";
+import { RewardsControllerAbi } from "./abis/RewardsControllerAbi";
 
 const maxBlockRange = process.env.MAX_BLOCK_RANGE
   ? parseInt(process.env.MAX_BLOCK_RANGE)
@@ -62,6 +63,17 @@ export default createConfig({
         avalanche: {
           address: addresses.VapeStaking?.avalanche,
           startBlock: 32271032,
+          maxBlockRange,
+        },
+      },
+    },
+
+    RewardsController: {
+      abi: RewardsControllerAbi,
+      network: {
+        avalanche: {
+          address: addresses.RewardsController?.avalanche,
+          startBlock: 32271032, // TODO: Update this
           maxBlockRange,
         },
       },

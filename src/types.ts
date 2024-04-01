@@ -52,3 +52,11 @@ export interface UserHistory {
   first10kSwaps: boolean;
   first100kSwaps: boolean;
 }
+
+export interface TokenIdData {
+  id: string;
+  tokenId: bigint;
+  chainId: number;
+  pointsClaimed: bigint;
+  pointsSpent: bigint;
+}
