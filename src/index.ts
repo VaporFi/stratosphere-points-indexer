@@ -3,7 +3,7 @@ import {
   getOrCreateUserData,
   queryQuote,
   getTokenId,
-  getOrCreateTokenIdData,
+  getOrUpdateTokenIdData,
 } from "./helpers";
 import {
   BIGINT_HUNDRED_THOUSAND,
@@ -13,15 +13,16 @@ import {
   BIGINT_ZERO,
   MINIMUM_POINTS,
   assets,
-  chainId,
   pointsMap,
 } from "./config/constants";
+import { get } from "http";
 
 ponder.on("Stratosphere:Transfer", async ({ event, context }) => {
   const { Points } = context.db;
   const { to: userAddress, tokenId } = event.args;
   const { hash } = event.transaction;
   const { chainId } = context.network;
+  const timestamp = event.block.timestamp;
 
   await getOrCreateUserData(context, tokenId, userAddress);
 
@@ -33,17 +34,22 @@ ponder.on("Stratosphere:Transfer", async ({ event, context }) => {
       pointsSource: "stratosphere_enrollment",
       points: pointsMap.Enrollment,
       chainId: chainId,
-      timestamp: event.block.timestamp,
+      timestamp: timestamp,
     },
+  });
+
+  await getOrUpdateTokenIdData(context, tokenId, timestamp, {
+    pointsEarned: pointsMap.Enrollment,
   });
 });
 
 ponder.on("LiquidMining:Deposit", async ({ event, context }) => {
-  const { Points, UserHistory, LiquidMining } = context.db;
+  const { Points, UserHistory, LiquidMining, TokenIdData } = context.db;
   const { hash } = event.transaction;
   const { chainId } = context.network;
   const { seasonId, user: userAddress, amount } = event.args;
   const tokenId = await getTokenId(userAddress, context);
+  const timestamp = event.block.timestamp;
 
   if (tokenId === BIGINT_ZERO) {
     return;
@@ -69,8 +75,12 @@ ponder.on("LiquidMining:Deposit", async ({ event, context }) => {
         pointsSource: `liquid_mining_first_wallet_season_${Number(seasonId)}`,
         points: pointsMap.FirstWalletInVPNDLM,
         chainId: chainId,
-        timestamp: event.block.timestamp,
+        timestamp: timestamp,
       },
+    });
+
+    await getOrUpdateTokenIdData(context, tokenId, timestamp, {
+      pointsEarned: pointsMap.FirstWalletInVPNDLM,
     });
   }
 
@@ -85,8 +95,12 @@ ponder.on("LiquidMining:Deposit", async ({ event, context }) => {
         pointsSource: "liquid_mining_first_deposit",
         points: pointsMap.FirstDepositInVPNDLM,
         chainId: chainId,
-        timestamp: event.block.timestamp,
+        timestamp: timestamp,
       },
+    });
+
+    await getOrUpdateTokenIdData(context, tokenId, timestamp, {
+      pointsEarned: pointsMap.FirstDepositInVPNDLM,
     });
 
     await Points.create({
@@ -97,8 +111,12 @@ ponder.on("LiquidMining:Deposit", async ({ event, context }) => {
         pointsSource: "liquid_mining_one_season",
         points: pointsMap.OneSeasonVPNDLMLock,
         chainId: chainId,
-        timestamp: event.block.timestamp,
+        timestamp: timestamp,
       },
+    });
+
+    await getOrUpdateTokenIdData(context, tokenId, timestamp, {
+      pointsEarned: pointsMap.OneSeasonVPNDLMLock,
     });
 
     await UserHistory.update({
@@ -131,8 +149,12 @@ ponder.on("LiquidMining:Deposit", async ({ event, context }) => {
         pointsSource: "liquid_mining_three_seasons",
         points: pointsMap.ThreeSeasonVPNDLMLock,
         chainId: chainId,
-        timestamp: event.block.timestamp,
+        timestamp: timestamp,
       },
+    });
+
+    await getOrUpdateTokenIdData(context, tokenId, timestamp, {
+      pointsEarned: pointsMap.ThreeSeasonVPNDLMLock,
     });
 
     await UserHistory.update({
@@ -152,8 +174,12 @@ ponder.on("LiquidMining:Deposit", async ({ event, context }) => {
         pointsSource: "liquid_mining_six_seasons",
         points: pointsMap.SixSeasonVPNDLMLock,
         chainId: chainId,
-        timestamp: event.block.timestamp,
+        timestamp: timestamp,
       },
+    });
+
+    await getOrUpdateTokenIdData(context, tokenId, timestamp, {
+      pointsEarned: pointsMap.SixSeasonVPNDLMLock,
     });
 
     await UserHistory.update({
@@ -173,8 +199,12 @@ ponder.on("LiquidMining:Deposit", async ({ event, context }) => {
         pointsSource: "liquid_mining_twelve_seasons",
         points: pointsMap.OneYearVPNDLMLock,
         chainId: chainId,
-        timestamp: event.block.timestamp,
+        timestamp: timestamp,
       },
+    });
+
+    await getOrUpdateTokenIdData(context, tokenId, timestamp, {
+      pointsEarned: pointsMap.OneYearVPNDLMLock,
     });
 
     await UserHistory.update({
@@ -192,6 +222,7 @@ ponder.on("VapeStaking:Deposit", async ({ event, context }) => {
   const { chainId } = context.network;
   const { user: userAddress } = event.args;
   const tokenId = await getTokenId(userAddress, context);
+  const timestamp = event.block.timestamp;
 
   if (tokenId === BIGINT_ZERO) {
     return;
@@ -218,8 +249,12 @@ ponder.on("VapeStaking:Deposit", async ({ event, context }) => {
         pointsSource: "vape_staking_first_wallet",
         points: pointsMap.FirstWalletInVAPELM,
         chainId: chainId,
-        timestamp: event.block.timestamp,
+        timestamp: timestamp,
       },
+    });
+
+    await getOrUpdateTokenIdData(context, tokenId, timestamp, {
+      pointsEarned: pointsMap.FirstWalletInVAPELM,
     });
   }
 
@@ -227,15 +262,19 @@ ponder.on("VapeStaking:Deposit", async ({ event, context }) => {
 
   if (!userData.depositInVS) {
     await Points.create({
-      id: `${hash}-liquid-mining-first-deposit`,
+      id: `${hash}-vape-staking-first-deposit`,
       data: {
         userDataId: `${userAddress}-${chainId}`,
         userHistoryId: `${userAddress}-${chainId}`,
         pointsSource: "vape_staking_first_deposit",
         points: pointsMap.FirstDepositInVAPELM,
         chainId: chainId,
-        timestamp: event.block.timestamp,
+        timestamp: timestamp,
       },
+    });
+
+    await getOrUpdateTokenIdData(context, tokenId, timestamp, {
+      pointsEarned: pointsMap.FirstDepositInVAPELM,
     });
 
     await UserHistory.update({
@@ -253,6 +292,7 @@ ponder.on("DexAggregator:RouterSwap", async ({ event, context }) => {
   const { from: userAddress, hash } = event.transaction;
   const { chainId, name } = context.network;
   const tokenOut = assets[name].USDC as `0x${string}`;
+  const timestamp = event.block.timestamp;
 
   const tokenId = await getTokenId(userAddress, context);
 
@@ -279,6 +319,10 @@ ponder.on("DexAggregator:RouterSwap", async ({ event, context }) => {
         chainId: chainId,
         timestamp: event.block.timestamp,
       },
+    });
+
+    await getOrUpdateTokenIdData(context, tokenId, timestamp, {
+      pointsEarned: usdValueOfTrade,
     });
   }
 
@@ -307,8 +351,12 @@ ponder.on("DexAggregator:RouterSwap", async ({ event, context }) => {
         pointsSource: "dex_aggregator_1k_swaps",
         points: pointsMap.ThousandSwaps,
         chainId: chainId,
-        timestamp: event.block.timestamp,
+        timestamp: timestamp,
       },
+    });
+
+    await getOrUpdateTokenIdData(context, tokenId, timestamp, {
+      pointsEarned: pointsMap.ThousandSwaps,
     });
 
     await UserHistory.update({
@@ -332,8 +380,12 @@ ponder.on("DexAggregator:RouterSwap", async ({ event, context }) => {
         pointsSource: "dex_aggregator_10k_swaps",
         points: pointsMap.TenThousandSwaps,
         chainId: chainId,
-        timestamp: event.block.timestamp,
+        timestamp: timestamp,
       },
+    });
+
+    await getOrUpdateTokenIdData(context, tokenId, timestamp, {
+      pointsEarned: pointsMap.TenThousandSwaps,
     });
 
     await UserHistory.update({
@@ -357,8 +409,12 @@ ponder.on("DexAggregator:RouterSwap", async ({ event, context }) => {
         pointsSource: "dex_aggregator_100k_swaps",
         points: pointsMap.HundredThousandSwaps,
         chainId: chainId,
-        timestamp: event.block.timestamp,
+        timestamp: timestamp,
       },
+    });
+
+    await getOrUpdateTokenIdData(context, tokenId, timestamp, {
+      pointsEarned: pointsMap.HundredThousandSwaps,
     });
 
     await UserHistory.update({
@@ -372,15 +428,8 @@ ponder.on("DexAggregator:RouterSwap", async ({ event, context }) => {
 
 ponder.on("RewardsController:ClaimPoints", async ({ event, context }) => {
   const { tokenId, points } = event.args;
-  await getOrCreateTokenIdData(context, tokenId);
-
-  const { TokenIdData } = context.db;
-  const { chainId } = context.network;
-
-  await TokenIdData.update({
-    id: `${tokenId}-${chainId}`,
-    data: ({ current }) => ({
-      pointsClaimed: current.pointsClaimed + points,
-    }),
+  const timestamp = event.block.timestamp;
+  await getOrUpdateTokenIdData(context, tokenId, timestamp, {
+    pointsClaimed: points,
   });
 });

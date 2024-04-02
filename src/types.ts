@@ -57,6 +57,7 @@ export interface TokenIdData {
   id: string;
   tokenId: bigint;
   chainId: number;
+  pointsEarned: bigint;
   pointsClaimed: bigint;
   pointsSpent: bigint;
 }

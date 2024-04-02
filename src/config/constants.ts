@@ -73,11 +73,11 @@ export const assets = {
 
 export const deployedBlockTimestamps = {
   [Chains.AVALANCHE]: {
-    Stratosphere: 20310567,
-    DexAggregator: 20308160,
-    LiquidMining: 32271032,
-    VapeStaking: 33291048,
-    RewardsController: 33291048,
+    Stratosphere: 20310567n,
+    DexAggregator: 20308160n,
+    LiquidMining: 32271032n,
+    VapeStaking: 33291048n,
+    RewardsController: 33291048n,
   },
 };
 

@@ -121,6 +121,7 @@ export default createSchema((p) => ({
     id: p.string(),
     tokenId: p.bigint(),
     chainId: p.int(),
+    pointsEarned: p.bigint(),
     pointsClaimed: p.bigint(),
     pointsSpent: p.bigint(),
   }),
