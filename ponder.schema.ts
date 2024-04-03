@@ -124,5 +124,17 @@ export default createSchema((p) => ({
     pointsEarned: p.bigint(),
     pointsClaimed: p.bigint(),
     pointsSpent: p.bigint(),
+    lastUpdated: p.bigint(),
+  }),
+
+  // @dev: Id is the tokenId + chainId + weekId
+  TokenIdDataWeekly: p.createTable({
+    id: p.string(),
+    tokenId: p.bigint(),
+    chainId: p.int(),
+    pointsEarned: p.bigint(),
+    pointsClaimed: p.bigint(),
+    pointsSpent: p.bigint(),
+    lastUpdated: p.bigint(),
   }),
 }));

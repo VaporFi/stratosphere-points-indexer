@@ -2,6 +2,9 @@ require("dotenv").config();
 const postgres = require("postgres");
 const sql = postgres(process.env.DATABASE_URL);
 
+const weeklyEntitiesInMonth = 4;
+const weeklyEntitiesInYear = weeklyEntitiesInMonth * 12;
+
 async function getAllPoints(chainId) {
   const userIdPoint = await sql`
     SELECT "userDataId",  "points"
@@ -66,4 +69,60 @@ async function getCombinedPoints(chainId) {
   return combinedPointByTokenId;
 }
 
+async function getTokenIdData(chainId) {
+  const tokenIdData = await sql`
+    SELECT *
+    FROM public."TokenIdData"
+    WHERE "chainId" = ${chainId}
+    ;`;
+}
+
+async function getTokenIdDataWeekly(chainId, tokenId) {
+  const tokenIdDataWeekly = await sql`
+  SELECT *
+  FROM public."TokenIdDataWeekly"
+  WHERE "chainId" = ${chainId}
+  AND "tokenId" = ${tokenId}
+  ORDER BY "lastUpdated" DESC
+  ;`;
+
+  return tokenIdDataWeekly;
+}
+
+async function getTokenIdDataCombimed(chainId) {
+  const tokenIdData = await getTokenIdData(chainId);
+
+  const tokenIdDataCombined = tokenIdData.reduce((acc, data) => {
+    const tokenId = data.tokenId;
+    if (!acc[tokenId]) {
+      acc[tokenId] = {
+        pointsEarned: 0,
+        pointsClaimed: 0,
+        pointsSpent: 0,
+      };
+    }
+    acc[tokenId].pointsEarned += parseInt(data.pointsEarned);
+    acc[tokenId].pointsClaimed += parseInt(data.pointsClaimed);
+    acc[tokenId].pointsSpent += parseInt(data.pointsSpent);
+    return acc;
+  }, {});
+
+  return tokenIdDataCombined; // Equivalent to the return of getCombinedPoints
+}
+
+async function implementCriterias(chainId) {
+  const combinedPointByTokenId = await getTokenIdDataCombimed(chainId);
+
+  // Check if the user claimed points in the previous month
+}
+
 module.exports = getCombinedPoints;
+
+// Criterias:
+// Criteria 1: At each calendar month's start, my accrued points from 12 months prior are reset.
+
+// Criteria 2: The reset takes into account only the points that I didn’t claim in the previous month.
+
+// Criteria 3: The reset is made for each chain where strat is available
+
+// Criteria 4: The reset is made for each token ID

@@ -60,4 +60,5 @@ export interface TokenIdData {
   pointsEarned: bigint;
   pointsClaimed: bigint;
   pointsSpent: bigint;
+  lastUpdated: bigint;
 }

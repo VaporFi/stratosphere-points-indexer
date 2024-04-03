@@ -285,16 +285,16 @@ export async function getOrUpdateTokenIdData(
     pointsSpent: bigint;
   }> = {}
 ): Promise<TokenIdData> {
-  const { TokenIdData } = context.db;
+  const { TokenIdData, TokenIdDataWeekly } = context.db;
   const { chainId, name } = context.network;
 
   const deployedBlockTimestamp = deployedBlockTimestamps[name].Stratosphere;
-  const monthlyId = `${tokenId}-${chainId}-${getMonthlyID(timestamp, deployedBlockTimestamp)}`;
+  const weeklyId = `${tokenId}-${chainId}-${getWeeklyID(timestamp, deployedBlockTimestamp)}`;
 
   let tokenIdData = await TokenIdData.findUnique({
     id: `${tokenId}-${chainId}`,
   });
-  let tokenIdDataMonthly = await TokenIdData.findUnique({ id: monthlyId });
+  let tokenIdDataWeekly = await TokenIdDataWeekly.findUnique({ id: weeklyId });
 
   if (!tokenIdData) {
     tokenIdData = await TokenIdData.create({
@@ -305,19 +305,21 @@ export async function getOrUpdateTokenIdData(
         pointsEarned: BIGINT_ZERO,
         pointsClaimed: BIGINT_ZERO,
         pointsSpent: BIGINT_ZERO,
+        lastUpdated: timestamp,
       },
     });
   }
 
-  if (!tokenIdDataMonthly) {
-    tokenIdDataMonthly = await TokenIdData.create({
-      id: monthlyId,
+  if (!tokenIdDataWeekly) {
+    tokenIdDataWeekly = await TokenIdDataWeekly.create({
+      id: weeklyId,
       data: {
         tokenId,
         chainId,
         pointsEarned: BIGINT_ZERO,
         pointsClaimed: BIGINT_ZERO,
         pointsSpent: BIGINT_ZERO,
+        lastUpdated: timestamp,
       },
     });
   }
@@ -328,15 +330,17 @@ export async function getOrUpdateTokenIdData(
       pointsEarned: current.pointsEarned + pointsEarned,
       pointsClaimed: current.pointsClaimed + pointsClaimed,
       pointsSpent: current.pointsSpent + pointsSpent,
+      lastUpdated: timestamp,
     }),
   });
 
-  tokenIdDataMonthly = await TokenIdData.update({
-    id: monthlyId,
+  tokenIdDataWeekly = await TokenIdDataWeekly.update({
+    id: weeklyId,
     data: ({ current }) => ({
       pointsEarned: current.pointsEarned + pointsEarned,
       pointsClaimed: current.pointsClaimed + pointsClaimed,
       pointsSpent: current.pointsSpent + pointsSpent,
+      lastUpdated: timestamp,
     }),
   });
 
