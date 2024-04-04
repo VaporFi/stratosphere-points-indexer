@@ -15,7 +15,6 @@ import {
   assets,
   pointsMap,
 } from "./config/constants";
-import { get } from "http";
 
 ponder.on("Stratosphere:Transfer", async ({ event, context }) => {
   const { Points } = context.db;

@@ -107,44 +107,59 @@ async function getTokenIdDataCombimed(chainId) {
     return acc;
   }, {});
 
-  tokenIdDataCombined = attachTierToTokenIdData(tokenIdDataCombined);
-
-  return tokenIdDataCombined; // Equivalent to the return of getCombinedPoints
+  return tokenIdDataCombined;
 }
 
-async function getTier(totalPoints, totalUsers) {
-  totalUsers = totalUsers[0].count;
+// Lets introduce a tier system to the points
+// Example, the top 0.01% of the users get the "Obsidian" tier
+// The top 0.05% get the "Diamond" tier
+// The top 0.2% get the "Platinum" tier
+// The top 1% get the "Gold" tier
+// The top 5% get the "Silver" tier
+// Remaining get the "Basic" tier
+function getTier(tokenIdDataCombined, userTokenId) {
+  // Extract data into an array for sorting
+  const tokenIdData = Object.keys(tokenIdDataCombined).map((tokenId) => {
+    const { pointsEarned, pointsClaimed, pointsSpent } =
+      tokenIdDataCombined[tokenId];
+    return { tokenId, pointsEarned, pointsClaimed, pointsSpent };
+  });
 
-  const obsidianTier = Math.floor(totalUsers * 0.0001);
-  const diamondTier = Math.floor(totalUsers * 0.0005);
-  const platinumTier = Math.floor(totalUsers * 0.002);
-  const goldTier = Math.floor(totalUsers * 0.01);
-  const silverTier = Math.floor(totalUsers * 0.05);
+  // Sort tokenIdData by (pointsEarned - pointsSpent) in descending order
+  tokenIdData.sort((a, b) => {
+    const totalPointsA = a.pointsEarned - a.pointsSpent;
+    const totalPointsB = b.pointsEarned - b.pointsSpent;
+    return totalPointsB - totalPointsA;
+  });
 
-  if (totalPoints > obsidianTier) {
+  // Calculate the percentile of the user
+  const userIndex = tokenIdData.findIndex(
+    (data) => data.tokenId === userTokenId
+  );
+  const totalUsers = tokenIdData.length;
+  const percentile = ((totalUsers - userIndex) / totalUsers) * 100;
+
+  // Determine the tier based on the percentile
+  if (percentile <= 0.01) {
     return 5;
-  } else if (totalPoints > diamondTier) {
+  } else if (percentile <= 0.05) {
     return 4;
-  } else if (totalPoints > platinumTier) {
+  } else if (percentile <= 0.2) {
     return 3;
-  } else if (totalPoints > goldTier) {
+  } else if (percentile <= 1) {
     return 2;
-  } else if (totalPoints > silverTier) {
+  } else if (percentile <= 5) {
     return 1;
   } else {
     return 0;
   }
 }
 
-async function attachTierToTokenIdData(tokenIdData) {
-  const tokenIdDataWithTier = tokenIdData.map((data) => {
-    const { pointsEarned, pointsSpent } = data;
-    const totalPoints = pointsEarned - pointsSpent;
-    const tier = getTier(totalPoints, tokenIdData.length);
-    return { ...data, tier };
-  });
+async function getTokenIdDataCombimedWithTier(chainId, userTokenId) {
+  const tokenIdDataCombined = await getTokenIdDataCombimed(chainId);
+  const tier = getTier(tokenIdDataCombined, userTokenId);
 
-  return tokenIdDataWithTier;
+  return { ...tokenIdDataCombined, tier };
 }
 
-module.exports = getTokenIdDataCombimed;
+module.exports = getTokenIdDataCombimedWithTier;
