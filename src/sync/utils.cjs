@@ -107,22 +107,44 @@ async function getTokenIdDataCombimed(chainId) {
     return acc;
   }, {});
 
+  tokenIdDataCombined = attachTierToTokenIdData(tokenIdDataCombined);
+
   return tokenIdDataCombined; // Equivalent to the return of getCombinedPoints
 }
 
-async function implementCriterias(chainId) {
-  const combinedPointByTokenId = await getTokenIdDataCombimed(chainId);
+async function getTier(totalPoints, totalUsers) {
+  totalUsers = totalUsers[0].count;
 
-  // Check if the user claimed points in the previous month
+  const obsidianTier = Math.floor(totalUsers * 0.0001);
+  const diamondTier = Math.floor(totalUsers * 0.0005);
+  const platinumTier = Math.floor(totalUsers * 0.002);
+  const goldTier = Math.floor(totalUsers * 0.01);
+  const silverTier = Math.floor(totalUsers * 0.05);
+
+  if (totalPoints > obsidianTier) {
+    return 5;
+  } else if (totalPoints > diamondTier) {
+    return 4;
+  } else if (totalPoints > platinumTier) {
+    return 3;
+  } else if (totalPoints > goldTier) {
+    return 2;
+  } else if (totalPoints > silverTier) {
+    return 1;
+  } else {
+    return 0;
+  }
 }
 
-module.exports = getCombinedPoints;
+async function attachTierToTokenIdData(tokenIdData) {
+  const tokenIdDataWithTier = tokenIdData.map((data) => {
+    const { pointsEarned, pointsSpent } = data;
+    const totalPoints = pointsEarned - pointsSpent;
+    const tier = getTier(totalPoints, tokenIdData.length);
+    return { ...data, tier };
+  });
 
-// Criterias:
-// Criteria 1: At each calendar month's start, my accrued points from 12 months prior are reset.
+  return tokenIdDataWithTier;
+}
 
-// Criteria 2: The reset takes into account only the points that I didn’t claim in the previous month.
-
-// Criteria 3: The reset is made for each chain where strat is available
-
-// Criteria 4: The reset is made for each token ID
+module.exports = getTokenIdDataCombimed;

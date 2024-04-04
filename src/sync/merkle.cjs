@@ -1,13 +1,12 @@
 const { AbiCoder } = require("ethers");
 const keccack256 = require("keccak256");
 const { MerkleTree } = require("merkletreejs");
-
-const getCombinedPoints = require("./utils.cjs");
+const getTokenIdDataCombimed = require("./utils.cjs");
 
 async function getMerkleRoot(chainId) {
-  const data = await getCombinedPoints(chainId);
+  const data = await getTokenIdDataCombimed(chainId);
   const leaves = Object.keys(data).map((tokenId) => {
-    return encodeLeaf(tokenId, data[tokenId]);
+    return encodeLeaf(tokenId, data[tokenId], data[tokenId].tier);
   });
   const tree = new MerkleTree(leaves, keccack256, { sortPairs: true });
   const root = tree.getHexRoot();
@@ -15,9 +14,12 @@ async function getMerkleRoot(chainId) {
   return root;
 }
 
-function encodeLeaf(tokenId, points) {
+function encodeLeaf(tokenId, points, tier) {
   const encoder = AbiCoder.defaultAbiCoder();
-  const leaf = encoder.encode(["uint256", "uint256"], [tokenId, points]);
+  const leaf = encoder.encode(
+    ["uint256", "uint256", "uint256"],
+    [tokenId, points]
+  );
   return leaf;
 }
 
