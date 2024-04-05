@@ -13,11 +13,14 @@ const maxBlockRange = process.env.MAX_BLOCK_RANGE
   ? parseInt(process.env.MAX_BLOCK_RANGE)
   : 2_000;
 
+const rpc =
+  process.env.AVALANCHE_RPC || "https://api.avax.network/ext/bc/C/rpc";
+
 export default createConfig({
   networks: {
     avalanche: {
       chainId: 43114,
-      transport: http("https://api.avax.network/ext/bc/C/rpc"),
+      transport: http(rpc),
     },
     telos: {
       chainId: 40,
@@ -73,7 +76,7 @@ export default createConfig({
       network: {
         avalanche: {
           address: addresses.RewardsController?.avalanche,
-          startBlock: 32271032, // TODO: Update this
+          startBlock: 43805790, // TODO: Update this
           maxBlockRange,
         },
       },
