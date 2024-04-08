@@ -82,6 +82,7 @@ export default createSchema((p) => ({
   // @dev: Id is the user's wallet address + chainId
   UserHistory: p.createTable({
     id: p.string(),
+    chainId: p.int(),
     LMSeasons: p.bigint().list(), // If the array is empty, the user has not participated in any season
     depositInVS: p.boolean(),
     LMOneSeasonPointsClaimed: p.boolean(),
@@ -93,7 +94,6 @@ export default createSchema((p) => ({
     first1kSwaps: p.boolean(),
     first10kSwaps: p.boolean(),
     first100kSwaps: p.boolean(),
-    chainId: p.int(),
   }),
 
   // @dev: Id is the user's wallet address + chainId

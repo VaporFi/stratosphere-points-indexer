@@ -54,6 +54,8 @@ ponder.on("LiquidMining:Deposit", async ({ event, context }) => {
     return;
   }
 
+  let userData = await getOrCreateUserData(context, tokenId, userAddress);
+
   let liquidMiningData = await LiquidMining.findUnique({
     id: seasonId,
   });
@@ -82,8 +84,6 @@ ponder.on("LiquidMining:Deposit", async ({ event, context }) => {
       pointsEarned: pointsMap.FirstWalletInVPNDLM,
     });
   }
-
-  const userData = await getOrCreateUserData(context, tokenId, userAddress);
 
   if (userData.LMSeasons.length === 0) {
     await Points.create({
@@ -118,7 +118,7 @@ ponder.on("LiquidMining:Deposit", async ({ event, context }) => {
       pointsEarned: pointsMap.OneSeasonVPNDLMLock,
     });
 
-    await UserHistory.update({
+    userData = await UserHistory.update({
       id: `${userAddress}-${chainId}`,
       data: {
         LMSeasons: [seasonId],
@@ -128,7 +128,7 @@ ponder.on("LiquidMining:Deposit", async ({ event, context }) => {
   }
 
   if (!userData.LMSeasons.includes(seasonId)) {
-    await UserHistory.update({
+    userData = await UserHistory.update({
       id: `${userAddress}-${chainId}`,
       data: ({ current }) => ({
         LMSeasons: [...current.LMSeasons, seasonId],
@@ -156,7 +156,7 @@ ponder.on("LiquidMining:Deposit", async ({ event, context }) => {
       pointsEarned: pointsMap.ThreeSeasonVPNDLMLock,
     });
 
-    await UserHistory.update({
+    userData = await UserHistory.update({
       id: `${userAddress}-${chainId}`,
       data: {
         LMThreeSeasonsPointsClaimed: true,
@@ -181,7 +181,7 @@ ponder.on("LiquidMining:Deposit", async ({ event, context }) => {
       pointsEarned: pointsMap.SixSeasonVPNDLMLock,
     });
 
-    await UserHistory.update({
+    userData = await UserHistory.update({
       id: `${userAddress}-${chainId}`,
       data: {
         LMSixSeasonsPointsClaimed: true,
@@ -206,7 +206,7 @@ ponder.on("LiquidMining:Deposit", async ({ event, context }) => {
       pointsEarned: pointsMap.OneYearVPNDLMLock,
     });
 
-    await UserHistory.update({
+    userData = await UserHistory.update({
       id: `${userAddress}-${chainId}`,
       data: {
         LMOneYearPointsClaimed: true,
@@ -257,7 +257,7 @@ ponder.on("VapeStaking:Deposit", async ({ event, context }) => {
     });
   }
 
-  const userData = await getOrCreateUserData(context, tokenId, userAddress);
+  let userData = await getOrCreateUserData(context, tokenId, userAddress);
 
   if (!userData.depositInVS) {
     await Points.create({
@@ -276,7 +276,7 @@ ponder.on("VapeStaking:Deposit", async ({ event, context }) => {
       pointsEarned: pointsMap.FirstDepositInVAPELM,
     });
 
-    await UserHistory.update({
+    userData = await UserHistory.update({
       id: `${userAddress}-${chainId}`,
       data: {
         depositInVS: true,
@@ -325,14 +325,14 @@ ponder.on("DexAggregator:RouterSwap", async ({ event, context }) => {
     });
   }
 
-  const userData = await getOrCreateUserData(context, tokenId, userAddress);
+  let userData = await getOrCreateUserData(context, tokenId, userAddress);
 
   // Update total swaps and total USD value of swaps
-  await UserHistory.update({
+  userData = await UserHistory.update({
     id: `${userAddress}-${chainId}`,
     data: {
       usdValueOfSwaps: userData.usdValueOfSwaps + usdValueOfTrade,
-      swaps: userData.swaps + 1n,
+      swaps: userData.swaps + BIGINT_ONE,
     },
   });
 
@@ -358,7 +358,7 @@ ponder.on("DexAggregator:RouterSwap", async ({ event, context }) => {
       pointsEarned: pointsMap.ThousandSwaps,
     });
 
-    await UserHistory.update({
+    userData = await UserHistory.update({
       id: `${userAddress}-${chainId}`,
       data: {
         first1kSwaps: true,
@@ -387,7 +387,7 @@ ponder.on("DexAggregator:RouterSwap", async ({ event, context }) => {
       pointsEarned: pointsMap.TenThousandSwaps,
     });
 
-    await UserHistory.update({
+    userData = await UserHistory.update({
       id: `${userAddress}-${chainId}`,
       data: {
         first10kSwaps: true,
@@ -416,7 +416,7 @@ ponder.on("DexAggregator:RouterSwap", async ({ event, context }) => {
       pointsEarned: pointsMap.HundredThousandSwaps,
     });
 
-    await UserHistory.update({
+    userData = await UserHistory.update({
       id: `${userAddress}-${chainId}`,
       data: {
         first100kSwaps: true,
