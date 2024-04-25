@@ -3,7 +3,7 @@ import { http } from "viem";
 
 import { DexAggregatorAbi } from "./abis/DexAggregatorAbi";
 import { StratosphereAbi } from "./abis/StratosphereAbi";
-import { addresses } from "./src/config/constants";
+import { addresses, rpcMap } from "./src/config/constants";
 
 import { LiquidMiningAbi } from "./abis/LiquidMiningAbi";
 import { VapeStakingAbi } from "./abis/VapeStakingAbi";
@@ -13,18 +13,15 @@ const maxBlockRange = process.env.MAX_BLOCK_RANGE
   ? parseInt(process.env.MAX_BLOCK_RANGE)
   : 2_000;
 
-const rpc =
-  process.env.AVALANCHE_RPC || "https://api.avax.network/ext/bc/C/rpc";
-
 export default createConfig({
   networks: {
     avalanche: {
       chainId: 43114,
-      transport: http(rpc),
+      transport: http(rpcMap.avalanche),
     },
     telos: {
       chainId: 40,
-      transport: http("https://api.telos.kainosbp.com"),
+      transport: http(rpcMap.telos),
     },
   },
   contracts: {

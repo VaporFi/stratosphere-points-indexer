@@ -40,6 +40,10 @@ type AddressMap = {
   };
 };
 
+type RpcMap = {
+  [K in Chains]?: string;
+};
+
 /**
  * Mapping of chain IDs for different chains.
  */
@@ -69,6 +73,13 @@ export const assets = {
     USDt: "0xde3A24028580884448a5397872046a019649b084",
     BTCb: "0x152b9d0FdC40C096757F570A51E494bd4b943E50",
   },
+};
+
+export const rpcMap: RpcMap = {
+  [Chains.AVALANCHE]: "https://api.avax.network/ext/bc/C/rpc",
+  [Chains.AVALANCHE_TESTNET]: "https://api.avax-test.network/ext/bc/C/rpc",
+  [Chains.TELOS]: "https://api.telos.kainosbp.com",
+  [Chains.TELOS_TESTNET]: "https://testnet.telos.kainosbp.com",
 };
 
 export const deployedBlockTimestamps = {
