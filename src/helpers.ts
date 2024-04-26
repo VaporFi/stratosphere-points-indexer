@@ -8,8 +8,53 @@ import {
   UserVapeStakingData,
 } from "./types";
 import { StratosphereAbi } from "../abis/StratosphereAbi";
-import { addresses, assets, BIGINT_ZERO } from "./config/constants";
+import {
+  addresses,
+  assets,
+  BIGINT_ZERO,
+  deployedBlockTimestamps,
+} from "./config/constants";
 import axios from "axios";
+
+/**
+ * Calculates the daily ID based on a given timestamp and the deployed block timestamp of the Stratosphere contract.
+ * @param timestamp - The timestamp for which the daily ID needs to be calculated.
+ * @returns A bigint representing the calculated daily ID.
+ */
+export function getDailyID(
+  timestamp: bigint,
+  deployedBlockTimestamp: bigint
+): bigint {
+  let dailyID = (timestamp - deployedBlockTimestamp) / 86400n;
+  return dailyID + 1n;
+}
+
+/**
+ * Calculates the weekly ID based on a given timestamp and the deployed block timestamp of the Stratosphere contract.
+ * @param timestamp - The timestamp for which the weekly ID needs to be calculated.
+ * @returns A bigint representing the calculated weekly ID.
+ */
+export function getWeeklyID(
+  timestamp: bigint,
+  deployedBlockTimestamp: bigint
+): bigint {
+  let weeklyID = (timestamp - deployedBlockTimestamp) / 604800n;
+  return weeklyID + 1n;
+}
+
+/**
+ * Calculates the monthly ID based on a given timestamp and the deployed block timestamp of the Stratosphere contract.
+ * @param timestamp - The timestamp for which the monthly ID needs to be calculated.
+ * @returns A bigint representing the calculated monthly ID.
+ */
+
+export function getMonthlyID(
+  timestamp: bigint,
+  deployedBlockTimestamp: bigint
+): bigint {
+  let monthlyID = (timestamp - deployedBlockTimestamp) / 2592000n;
+  return monthlyID + 1n;
+}
 
 /**
  * Retrieves or creates user data based on the provided parameters.
@@ -213,33 +258,91 @@ export async function queryVapeStakingData(
 }
 
 /**
- * Retrieves or creates a TokenIdData object based on the provided tokenId and context.
+ * Retrieves or updates the TokenIdData for a given tokenId and timestamp.
+ * If the TokenIdData does not exist, it will be created.
+ * If the monthly TokenIdData does not exist, it will be created.
+ * Updates the pointsEarned, pointsClaimed, and pointsSpent values for both the TokenIdData and monthly TokenIdData.
+ * @notice The monthly data is for helping reset points
  * @param context - The execution context.
- * @param tokenId - The token ID.
- * @returns A Promise that resolves to the TokenIdData object.
+ * @param tokenId - The tokenId.
+ * @param timestamp - The timestamp.
+ * @param pointsEarned - The points earned (default: 0).
+ * @param pointsClaimed - The points claimed (default: 0).
+ * @param pointsSpent - The points spent (default: 0).
+ * @returns The updated TokenIdData.
  */
-export async function getOrCreateTokenIdData(
+export async function getOrUpdateTokenIdData(
   context: Context,
-  tokenId: bigint
+  tokenId: bigint,
+  timestamp: bigint,
+  {
+    pointsEarned = BIGINT_ZERO,
+    pointsClaimed = BIGINT_ZERO,
+    pointsSpent = BIGINT_ZERO,
+  }: Partial<{
+    pointsEarned: bigint;
+    pointsClaimed: bigint;
+    pointsSpent: bigint;
+  }> = {}
 ): Promise<TokenIdData> {
-  const { TokenIdData } = context.db;
-  const { chainId } = context.network;
+  const { TokenIdData, TokenIdDataWeekly } = context.db;
+  const { chainId, name } = context.network;
+
+  const deployedBlockTimestamp = deployedBlockTimestamps[name].Stratosphere;
+  const weeklyId = `${tokenId}-${chainId}-${getWeeklyID(timestamp, deployedBlockTimestamp)}`;
 
   let tokenIdData = await TokenIdData.findUnique({
     id: `${tokenId}-${chainId}`,
   });
+  let tokenIdDataWeekly = await TokenIdDataWeekly.findUnique({ id: weeklyId });
 
   if (!tokenIdData) {
     tokenIdData = await TokenIdData.create({
       id: `${tokenId}-${chainId}`,
       data: {
-        tokenId: tokenId,
-        chainId: chainId,
+        tokenId,
+        chainId,
+        pointsEarned: BIGINT_ZERO,
         pointsClaimed: BIGINT_ZERO,
         pointsSpent: BIGINT_ZERO,
+        lastUpdated: timestamp,
       },
     });
   }
+
+  if (!tokenIdDataWeekly) {
+    tokenIdDataWeekly = await TokenIdDataWeekly.create({
+      id: weeklyId,
+      data: {
+        tokenId,
+        chainId,
+        pointsEarned: BIGINT_ZERO,
+        pointsClaimed: BIGINT_ZERO,
+        pointsSpent: BIGINT_ZERO,
+        lastUpdated: timestamp,
+      },
+    });
+  }
+
+  tokenIdData = await TokenIdData.update({
+    id: `${tokenId}-${chainId}`,
+    data: ({ current }) => ({
+      pointsEarned: current.pointsEarned + pointsEarned,
+      pointsClaimed: current.pointsClaimed + pointsClaimed,
+      pointsSpent: current.pointsSpent + pointsSpent,
+      lastUpdated: timestamp,
+    }),
+  });
+
+  tokenIdDataWeekly = await TokenIdDataWeekly.update({
+    id: weeklyId,
+    data: ({ current }) => ({
+      pointsEarned: current.pointsEarned + pointsEarned,
+      pointsClaimed: current.pointsClaimed + pointsClaimed,
+      pointsSpent: current.pointsSpent + pointsSpent,
+      lastUpdated: timestamp,
+    }),
+  });
 
   return tokenIdData;
 }

@@ -40,6 +40,10 @@ type AddressMap = {
   };
 };
 
+type RpcMap = {
+  [K in Chains]?: string;
+};
+
 /**
  * Mapping of chain IDs for different chains.
  */
@@ -71,13 +75,20 @@ export const assets = {
   },
 };
 
+export const rpcMap: RpcMap = {
+  [Chains.AVALANCHE]: "https://api.avax.network/ext/bc/C/rpc",
+  [Chains.AVALANCHE_TESTNET]: "https://api.avax-test.network/ext/bc/C/rpc",
+  [Chains.TELOS]: "https://api.telos.kainosbp.com",
+  [Chains.TELOS_TESTNET]: "https://testnet.telos.kainosbp.com",
+};
+
 export const deployedBlockTimestamps = {
   [Chains.AVALANCHE]: {
-    Stratosphere: 20310567,
-    DexAggregator: 20308160,
-    LiquidMining: 32271032,
-    VapeStaking: 33291048,
-    RewardsController: 33291048,
+    Stratosphere: 20310567n,
+    DexAggregator: 20308160n,
+    LiquidMining: 32271032n,
+    VapeStaking: 33291048n,
+    RewardsController: 33291048n,
   },
 };
 
