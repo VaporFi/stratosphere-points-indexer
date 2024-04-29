@@ -10,6 +10,7 @@ import {
   BIGINT_ONE,
   BIGINT_TEN_THOUSAND,
   BIGINT_THOUSAND,
+  BIGINT_THREE,
   BIGINT_ZERO,
   MINIMUM_POINTS,
   assets,
@@ -300,7 +301,7 @@ ponder.on("DexAggregator:RouterSwap", async ({ event, context }) => {
   }
 
   const usdValueOfTrade = await queryQuote(
-    { amountIn, tokenIn, tokenOut, maxSteps: BIGINT_ONE },
+    { amountIn, tokenIn, tokenOut, maxSteps: BIGINT_THREE },
     context
   );
 
