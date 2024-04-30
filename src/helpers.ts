@@ -121,7 +121,8 @@ export async function getOrCreateUserData(
  */
 export async function queryQuote(
   quoteParams: QueryWithAmountIn,
-  context: Context
+  context: Context,
+  blockNumber: bigint
 ): Promise<bigint> {
   const { client, network, contracts } = context;
 
@@ -139,6 +140,7 @@ export async function queryQuote(
           assets[network.name].USDC as `0x${string}`,
           quoteParams.maxSteps,
         ],
+        blockNumber: blockNumber,
       });
 
       if (quote.amounts.slice(-1)[0] !== BIGINT_ZERO) {
