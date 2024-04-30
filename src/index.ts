@@ -10,6 +10,7 @@ import {
   BIGINT_ONE,
   BIGINT_TEN_THOUSAND,
   BIGINT_THOUSAND,
+  BIGINT_THREE,
   BIGINT_ZERO,
   MINIMUM_POINTS,
   assets,
@@ -292,6 +293,7 @@ ponder.on("DexAggregator:RouterSwap", async ({ event, context }) => {
   const { chainId, name } = context.network;
   const tokenOut = assets[name].USDC as `0x${string}`;
   const timestamp = event.block.timestamp;
+  const blockNumber = event.block.number;
 
   const tokenId = await getTokenId(userAddress, context);
 
@@ -300,8 +302,9 @@ ponder.on("DexAggregator:RouterSwap", async ({ event, context }) => {
   }
 
   const usdValueOfTrade = await queryQuote(
-    { amountIn, tokenIn, tokenOut, maxSteps: BIGINT_ONE },
-    context
+    { amountIn, tokenIn, tokenOut, maxSteps: BIGINT_THREE },
+    context,
+    blockNumber
   );
 
   // @dev: We are trying maxSteps till 3, which includes all the common paths

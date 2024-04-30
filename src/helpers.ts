@@ -11,6 +11,7 @@ import { StratosphereAbi } from "../abis/StratosphereAbi";
 import {
   addresses,
   assets,
+  BIGINT_ONE,
   BIGINT_ZERO,
   deployedBlockTimestamps,
 } from "./config/constants";
@@ -120,13 +121,14 @@ export async function getOrCreateUserData(
  */
 export async function queryQuote(
   quoteParams: QueryWithAmountIn,
-  context: Context
+  context: Context,
+  blockNumber: bigint
 ): Promise<bigint> {
   const { client, network, contracts } = context;
 
   let quote: Quote = { amounts: [], adapters: [], path: [], gasEstimate: 0n };
 
-  while (quoteParams.maxSteps < 4) {
+  while (quoteParams.maxSteps > BIGINT_ZERO) {
     try {
       quote = await client.readContract({
         abi: contracts.DexAggregator.abi,
@@ -138,13 +140,14 @@ export async function queryQuote(
           assets[network.name].USDC as `0x${string}`,
           quoteParams.maxSteps,
         ],
+        blockNumber: blockNumber,
       });
 
       if (quote.amounts.slice(-1)[0] !== BIGINT_ZERO) {
         break;
       }
     } catch (e) {
-      quoteParams.maxSteps += 1n;
+      quoteParams.maxSteps -= BIGINT_ONE;
       continue;
     }
   }
