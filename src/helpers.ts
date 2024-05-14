@@ -147,7 +147,8 @@ export async function getOrCreateUserData(
 export async function queryQuote(
   quoteParams: QueryWithAmountIn,
   context: Context,
-  blockNumber: bigint
+  blockNumber: bigint,
+  aggregatorAddress: `0x${string}`
 ): Promise<bigint> {
   const { client, network, contracts } = context;
 
@@ -157,7 +158,7 @@ export async function queryQuote(
     try {
       quote = await client.readContract({
         abi: contracts.DexAggregator.abi,
-        address: addresses.DexAggregator![network.name] as `0x${string}`,
+        address: aggregatorAddress,
         functionName: "findBestPath",
         args: [
           quoteParams.amountIn,
