@@ -97,6 +97,9 @@ export async function getOrCreateUserData(
         first10kSwaps: false,
         first100kSwaps: false,
         chainId: chainId,
+        firstWalletInVPNDLM: false,
+        firstSwap: false,
+        firstWalletInVAPELM: false,
       },
     });
 
@@ -292,7 +295,10 @@ export async function getOrUpdateTokenIdData(
   const { chainId, name } = context.network;
 
   const deployedBlockTimestamp = deployedBlockTimestamps[name].Stratosphere;
-  const weeklyId = `${tokenId}-${chainId}-${getWeeklyID(timestamp, deployedBlockTimestamp)}`;
+  const weeklyId = `${tokenId}-${chainId}-${getWeeklyID(
+    timestamp,
+    deployedBlockTimestamp
+  )}`;
 
   let tokenIdData = await TokenIdData.findUnique({
     id: `${tokenId}-${chainId}`,

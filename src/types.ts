@@ -42,12 +42,15 @@ export interface UserHistory {
   chainId: number;
   LMSeasons: bigint[];
   depositInVS: boolean;
+  firstWalletInVPNDLM: boolean;
+  firstWalletInVAPELM: boolean;
   LMOneSeasonPointsClaimed: boolean;
   LMThreeSeasonsPointsClaimed: boolean;
   LMSixSeasonsPointsClaimed: boolean;
   LMOneYearPointsClaimed: boolean;
   usdValueOfSwaps: bigint;
   swaps: bigint;
+  firstSwap: boolean;
   first1kSwaps: boolean;
   first10kSwaps: boolean;
   first100kSwaps: boolean;

@@ -30,7 +30,7 @@ export default createConfig({
       network: {
         avalanche: {
           address: addresses.DexAggregator?.avalanche,
-          startBlock: 42346292,
+          startBlock: 20308160,
           maxBlockRange,
         },
       },
@@ -62,7 +62,7 @@ export default createConfig({
       network: {
         avalanche: {
           address: addresses.VapeStaking?.avalanche,
-          startBlock: 32271032,
+          startBlock: 33291048,
           maxBlockRange,
         },
       },
