@@ -57,6 +57,27 @@ export function getMonthlyID(
   return monthlyID + 1n;
 }
 
+export const handleChainFirstWallet = async (
+  context: Context,
+  chainId: number,
+  userAddressLowerCase: string,
+  userData: any
+): Promise<UserHistory> => {
+  const { AllProtocols, UserHistory } = context.db;
+  let allProtocols = await AllProtocols.findUnique({ id: "protocols" });
+  if (!allProtocols) {
+    allProtocols = await AllProtocols.create({
+      id: "protocols",
+      data: { firstWallet: userAddressLowerCase },
+    });
+    return await UserHistory.update({
+      id: `${userAddressLowerCase}-${chainId}`,
+      data: { chainFirstWallet: true },
+    });
+  }
+  return userData;
+};
+
 /**
  * Retrieves or creates user data based on the provided parameters.
  * @param context - The context object containing the database connection.
@@ -100,6 +121,7 @@ export async function getOrCreateUserData(
         firstWalletInVPNDLM: false,
         firstSwap: false,
         firstWalletInVAPELM: false,
+        chainFirstWallet: false,
       },
     });
 

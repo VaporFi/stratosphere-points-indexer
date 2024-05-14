@@ -85,6 +85,7 @@ export default createSchema((p) => ({
     chainId: p.int(),
     LMSeasons: p.bigint().list(), // If the array is empty, the user has not participated in any season
     depositInVS: p.boolean(),
+    chainFirstWallet: p.boolean(),
     firstWalletInVPNDLM: p.boolean(),
     firstWalletInVAPELM: p.boolean(),
     LMOneSeasonPointsClaimed: p.boolean(),
@@ -106,6 +107,8 @@ export default createSchema((p) => ({
     isMainWallet: p.boolean(),
     chainId: p.int(),
   }),
+
+  AllProtocols: p.createTable({ id: p.string(), firstWallet: p.string() }),
 
   // @dev: Id is the seasonId
   LiquidMining: p.createTable({

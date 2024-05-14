@@ -4,6 +4,7 @@ import {
   queryQuote,
   getTokenId,
   getOrUpdateTokenIdData,
+  handleChainFirstWallet,
 } from "./helpers";
 import {
   BIGINT_HUNDRED_THOUSAND,
@@ -45,7 +46,7 @@ ponder.on("Stratosphere:Transfer", async ({ event, context }) => {
 });
 
 ponder.on("LiquidMining:Deposit", async ({ event, context }) => {
-  const { Points, UserHistory, LiquidMining, TokenIdData } = context.db;
+  const { Points, UserHistory, LiquidMining } = context.db;
   const { hash } = event.transaction;
   const { chainId } = context.network;
   const { seasonId, user: userAddress, amount } = event.args;
@@ -62,7 +63,12 @@ ponder.on("LiquidMining:Deposit", async ({ event, context }) => {
     tokenId,
     userAddressLowerCase
   );
-
+  userData = await handleChainFirstWallet(
+    context,
+    chainId,
+    userAddressLowerCase,
+    userData
+  );
   let liquidMiningData = await LiquidMining.findUnique({
     id: seasonId,
   });
@@ -244,6 +250,12 @@ ponder.on("VapeStaking:Deposit", async ({ event, context }) => {
     tokenId,
     userAddressLowerCase
   );
+  userData = await handleChainFirstWallet(
+    context,
+    chainId,
+    userAddressLowerCase,
+    userData
+  );
 
   let vapeStakingData = await VapeStaking.findUnique({
     id: "vape-staking",
@@ -330,7 +342,12 @@ ponder.on("DexAggregator:RouterSwap", async ({ event, context }) => {
     tokenId,
     userAddressLowerCase
   );
-
+  userData = await handleChainFirstWallet(
+    context,
+    chainId,
+    userAddressLowerCase,
+    userData
+  );
   // @dev: We are trying maxSteps till 3, which includes all the common paths
   // For reference: https://github.com/VaporFi/dex-aggregator-v2/blob/cad6410a4cc429df532720bfee209852dbd97be4/src/facets/LegacyRouterFacet.sol#L332
   // If we are unable to find a path, usdValueOfTrade is Zero and we don't want to index that

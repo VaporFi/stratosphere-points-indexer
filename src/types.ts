@@ -42,6 +42,7 @@ export interface UserHistory {
   chainId: number;
   LMSeasons: bigint[];
   depositInVS: boolean;
+  chainFirstWallet: boolean;
   firstWalletInVPNDLM: boolean;
   firstWalletInVAPELM: boolean;
   LMOneSeasonPointsClaimed: boolean;
