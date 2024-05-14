@@ -84,6 +84,7 @@ export const rpcMap: RpcMap = {
 
 export const deployedBlockTimestamps = {
   [Chains.AVALANCHE]: {
+    DexAggregatorV2: 40178055n,
     Stratosphere: 20310567n,
     DexAggregator: 20308160n,
     LiquidMining: 32271032n,
@@ -96,6 +97,9 @@ export const deployedBlockTimestamps = {
  * Mapping of addresses for different contracts.
  */
 export const addresses: AddressMap = {
+  DexAggregatorV2: {
+    [Chains.AVALANCHE]: "0x55477d8537ede381784b448876AfAa98aa450E63",
+  },
   Stratosphere: {
     [Chains.AVALANCHE]: "0x08e287adCf9BF6773a87e1a278aa9042BEF44b60",
   },

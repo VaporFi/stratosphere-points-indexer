@@ -11,11 +11,18 @@ import { StratosphereAbi } from "../abis/StratosphereAbi";
 import {
   addresses,
   assets,
+  BIGINT_HUNDRED_THOUSAND,
   BIGINT_ONE,
+  BIGINT_TEN_THOUSAND,
+  BIGINT_THOUSAND,
+  BIGINT_THREE,
   BIGINT_ZERO,
   deployedBlockTimestamps,
+  MINIMUM_POINTS,
+  pointsMap,
 } from "./config/constants";
 import axios from "axios";
+import { Address } from "viem";
 
 /**
  * Calculates the daily ID based on a given timestamp and the deployed block timestamp of the Stratosphere contract.
@@ -377,3 +384,173 @@ export async function getOrUpdateTokenIdData(
 
   return tokenIdData;
 }
+
+export const handleDexSwap = async (context: Context, event: any) => {
+  const { Points, UserHistory } = context.db;
+  const { tokenOut: tokenIn, amountOut: amountIn } = event.args;
+  const { from: userAddress, hash } = event.transaction;
+  const { chainId, name } = context.network;
+  const tokenOut = assets[name].USDC as `0x${string}`;
+  const timestamp = event.block.timestamp;
+  const blockNumber = event.block.number;
+  const userAddressLowerCase = userAddress?.toLowerCase() as Address;
+  const tokenId = await getTokenId(userAddressLowerCase, context);
+
+  if (tokenId === BIGINT_ZERO) {
+    return;
+  }
+
+  const usdValueOfTrade = await queryQuote(
+    { amountIn, tokenIn, tokenOut, maxSteps: BIGINT_THREE },
+    context,
+    blockNumber
+  );
+
+  let userData = await getOrCreateUserData(
+    context,
+    tokenId,
+    userAddressLowerCase
+  );
+  userData = await handleChainFirstWallet(
+    context,
+    chainId,
+    userAddressLowerCase,
+    userData
+  );
+  // @dev: We are trying maxSteps till 3, which includes all the common paths
+  // For reference: https://github.com/VaporFi/dex-aggregator-v2/blob/cad6410a4cc429df532720bfee209852dbd97be4/src/facets/LegacyRouterFacet.sol#L332
+  // If we are unable to find a path, usdValueOfTrade is Zero and we don't want to index that
+  if (usdValueOfTrade >= MINIMUM_POINTS) {
+    await Points.create({
+      id: `${hash}-dex-aggregator-swap`,
+      data: {
+        userDataId: `${userAddressLowerCase}-${chainId}`,
+        userHistoryId: `${userAddressLowerCase}-${chainId}`,
+        pointsSource: "dex_aggregator_swap",
+        points: usdValueOfTrade,
+        chainId: chainId,
+        timestamp: event.block.timestamp,
+      },
+    });
+
+    if (!userData.firstSwap) {
+      userData = await UserHistory.update({
+        id: `${userAddressLowerCase}-${chainId}`,
+        data: { firstSwap: true },
+      });
+
+      await Points.create({
+        id: `${hash}-dex-aggregator-first-swap`,
+        data: {
+          userDataId: `${userAddressLowerCase}-${chainId}`,
+          userHistoryId: `${userAddressLowerCase}-${chainId}`,
+          pointsSource: "dex_aggregator_first_swap",
+          points: pointsMap.FirstSwap,
+          chainId: chainId,
+          timestamp: timestamp,
+        },
+      });
+    }
+
+    await getOrUpdateTokenIdData(context, tokenId, timestamp, {
+      pointsEarned: usdValueOfTrade,
+    });
+  }
+
+  // Update total swaps and total USD value of swaps
+  userData = await UserHistory.update({
+    id: `${userAddressLowerCase}-${chainId}`,
+    data: {
+      usdValueOfSwaps: userData.usdValueOfSwaps + usdValueOfTrade,
+      swaps: userData.swaps + BIGINT_ONE,
+    },
+  });
+
+  // Check for first $1k, $10k, $100k swaps and assign points accordingly
+  if (
+    userData.usdValueOfSwaps + usdValueOfTrade >=
+      BIGINT_THOUSAND * MINIMUM_POINTS &&
+    !userData.first1kSwaps
+  ) {
+    await Points.create({
+      id: `${hash}-dex-aggregator-1k-swaps`,
+      data: {
+        userDataId: `${userAddressLowerCase}-${chainId}`,
+        userHistoryId: `${userAddressLowerCase}-${chainId}`,
+        pointsSource: "dex_aggregator_1k_swaps",
+        points: pointsMap.ThousandSwaps,
+        chainId: chainId,
+        timestamp: timestamp,
+      },
+    });
+
+    await getOrUpdateTokenIdData(context, tokenId, timestamp, {
+      pointsEarned: pointsMap.ThousandSwaps,
+    });
+
+    userData = await UserHistory.update({
+      id: `${userAddressLowerCase}-${chainId}`,
+      data: {
+        first1kSwaps: true,
+      },
+    });
+  }
+
+  if (
+    userData.usdValueOfSwaps + usdValueOfTrade >=
+      BIGINT_TEN_THOUSAND * MINIMUM_POINTS &&
+    !userData.first10kSwaps
+  ) {
+    await Points.create({
+      id: `${hash}-dex-aggregator-10k-swaps`,
+      data: {
+        userDataId: `${userAddressLowerCase}-${chainId}`,
+        userHistoryId: `${userAddressLowerCase}-${chainId}`,
+        pointsSource: "dex_aggregator_10k_swaps",
+        points: pointsMap.TenThousandSwaps,
+        chainId: chainId,
+        timestamp: timestamp,
+      },
+    });
+
+    await getOrUpdateTokenIdData(context, tokenId, timestamp, {
+      pointsEarned: pointsMap.TenThousandSwaps,
+    });
+
+    userData = await UserHistory.update({
+      id: `${userAddressLowerCase}-${chainId}`,
+      data: {
+        first10kSwaps: true,
+      },
+    });
+  }
+
+  if (
+    userData.usdValueOfSwaps + usdValueOfTrade >=
+      BIGINT_HUNDRED_THOUSAND * MINIMUM_POINTS &&
+    !userData.first100kSwaps
+  ) {
+    await Points.create({
+      id: `${hash}-dex-aggregator-100k-swaps`,
+      data: {
+        userDataId: `${userAddressLowerCase}-${chainId}`,
+        userHistoryId: `${userAddressLowerCase}-${chainId}`,
+        pointsSource: "dex_aggregator_100k_swaps",
+        points: pointsMap.HundredThousandSwaps,
+        chainId: chainId,
+        timestamp: timestamp,
+      },
+    });
+
+    await getOrUpdateTokenIdData(context, tokenId, timestamp, {
+      pointsEarned: pointsMap.HundredThousandSwaps,
+    });
+
+    userData = await UserHistory.update({
+      id: `${userAddressLowerCase}-${chainId}`,
+      data: {
+        first100kSwaps: true,
+      },
+    });
+  }
+};

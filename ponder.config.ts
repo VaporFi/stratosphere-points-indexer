@@ -8,6 +8,7 @@ import { addresses, rpcMap } from "./src/config/constants";
 import { LiquidMiningAbi } from "./abis/LiquidMiningAbi";
 import { VapeStakingAbi } from "./abis/VapeStakingAbi";
 import { RewardsControllerAbi } from "./abis/RewardsControllerAbi";
+import { DexAggregatorV2ABI } from "./abis/DexAggregatorV2";
 
 const maxBlockRange = process.env.MAX_BLOCK_RANGE
   ? parseInt(process.env.MAX_BLOCK_RANGE)
@@ -25,6 +26,16 @@ export default createConfig({
     },
   },
   contracts: {
+    DexAggregatorV2: {
+      abi: DexAggregatorV2ABI,
+      network: {
+        avalanche: {
+          address: addresses.DexAggregatorV2?.avalanche,
+          startBlock: 40178055,
+          maxBlockRange,
+        },
+      },
+    },
     DexAggregator: {
       abi: DexAggregatorAbi,
       network: {
