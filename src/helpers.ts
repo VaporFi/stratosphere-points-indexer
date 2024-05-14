@@ -14,6 +14,7 @@ import {
   BIGINT_ONE,
   BIGINT_ZERO,
   deployedBlockTimestamps,
+  pointsMap,
 } from "./config/constants";
 import axios from "axios";
 
@@ -61,15 +62,28 @@ export const handleChainFirstWallet = async (
   context: Context,
   chainId: number,
   userAddressLowerCase: string,
-  userData: any
+  userData: any,
+  event: any
 ): Promise<UserHistory> => {
-  const { AllProtocols, UserHistory } = context.db;
+  const { AllProtocols, UserHistory, Points } = context.db;
   let allProtocols = await AllProtocols.findUnique({ id: "protocols" });
   if (!allProtocols) {
     allProtocols = await AllProtocols.create({
       id: "protocols",
       data: { firstWallet: userAddressLowerCase },
     });
+    await Points.create({
+      id: `${userAddressLowerCase}-chain-first-wallet`,
+      data: {
+        userDataId: `${userAddressLowerCase}-${chainId}`,
+        userHistoryId: `${userAddressLowerCase}-${chainId}`,
+        pointsSource: "chain_first_wallet",
+        points: pointsMap.ChainFirstWallet,
+        chainId: chainId,
+        timestamp: event?.block?.timestamp,
+      },
+    });
+
     return await UserHistory.update({
       id: `${userAddressLowerCase}-${chainId}`,
       data: { chainFirstWallet: true },

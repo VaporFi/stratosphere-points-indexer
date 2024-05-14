@@ -67,7 +67,8 @@ ponder.on("LiquidMining:Deposit", async ({ event, context }) => {
     context,
     chainId,
     userAddressLowerCase,
-    userData
+    userData,
+    event
   );
   let liquidMiningData = await LiquidMining.findUnique({
     id: seasonId,
@@ -254,7 +255,8 @@ ponder.on("VapeStaking:Deposit", async ({ event, context }) => {
     context,
     chainId,
     userAddressLowerCase,
-    userData
+    userData,
+    event
   );
 
   let vapeStakingData = await VapeStaking.findUnique({
@@ -346,7 +348,8 @@ ponder.on("DexAggregator:RouterSwap", async ({ event, context }) => {
     context,
     chainId,
     userAddressLowerCase,
-    userData
+    userData,
+    event
   );
   // @dev: We are trying maxSteps till 3, which includes all the common paths
   // For reference: https://github.com/VaporFi/dex-aggregator-v2/blob/cad6410a4cc429df532720bfee209852dbd97be4/src/facets/LegacyRouterFacet.sol#L332
