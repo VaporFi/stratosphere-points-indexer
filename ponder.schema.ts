@@ -41,6 +41,7 @@ const generateLMSeasonEnum = (numSeasons: number) => {
 const pointsSource = [
   "stratosphere_enrollment",
   "dex_aggregator_swap",
+  "dex_aggregator_first_swap",
   "dex_aggregator_1k_swaps",
   "dex_aggregator_10k_swaps",
   "dex_aggregator_100k_swaps",

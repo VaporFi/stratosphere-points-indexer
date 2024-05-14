@@ -103,6 +103,9 @@ export const addresses: AddressMap = {
   DexAggregator: {
     [Chains.AVALANCHE]: "0xDef9ee39FD82ee57a1b789Bc877E2Cbd88fd5caE",
   },
+  DexAggregatorV2: {
+    [Chains.AVALANCHE]: "0x55477d8537ede381784b448876AfAa98aa450E63",
+  },
   LiquidMining: {
     [Chains.AVALANCHE]: "0xAe950fdd0CC79DDE64d3Fffd40fabec3f7ba368B",
   },

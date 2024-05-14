@@ -364,27 +364,27 @@ ponder.on("DexAggregator:RouterSwap", async ({ event, context }) => {
       },
     });
 
-    if (!userData.firstSwap) {
-      userData = await UserHistory.update({
-        id: `${userAddressLowerCase}-${chainId}`,
-        data: { firstSwap: true },
-      });
-
-      await Points.create({
-        id: `${hash}-dex-aggregator-first-swap`,
-        data: {
-          userDataId: `${userAddressLowerCase}-${chainId}`,
-          userHistoryId: `${userAddressLowerCase}-${chainId}`,
-          pointsSource: "dex_aggregator_first_swap",
-          points: pointsMap.FirstSwap,
-          chainId: chainId,
-          timestamp: timestamp,
-        },
-      });
-    }
-
     await getOrUpdateTokenIdData(context, tokenId, timestamp, {
       pointsEarned: usdValueOfTrade,
+    });
+  }
+
+  if (!userData.firstSwap) {
+    userData = await UserHistory.update({
+      id: `${userAddressLowerCase}-${chainId}`,
+      data: { firstSwap: true },
+    });
+
+    await Points.create({
+      id: `${hash}-dex-aggregator-first-swap`,
+      data: {
+        userDataId: `${userAddressLowerCase}-${chainId}`,
+        userHistoryId: `${userAddressLowerCase}-${chainId}`,
+        pointsSource: "dex_aggregator_first_swap",
+        points: pointsMap.FirstSwap,
+        chainId: chainId,
+        timestamp: timestamp,
+      },
     });
   }
 
