@@ -336,7 +336,8 @@ ponder.on("DexAggregator:RouterSwap", async ({ event, context }) => {
   const usdValueOfTrade = await queryQuote(
     { amountIn, tokenIn, tokenOut, maxSteps: BIGINT_THREE },
     context,
-    blockNumber
+    blockNumber,
+    event.log.address
   );
 
   let userData = await getOrCreateUserData(
