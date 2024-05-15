@@ -84,7 +84,7 @@ export const handleChainFirstWallet = async (
       },
     });
 
-    return await UserHistory.update({
+    userData = await UserHistory.update({
       id: `${userAddressLowerCase}-${chainId}`,
       data: { chainFirstWallet: true },
     });

@@ -403,8 +403,7 @@ ponder.on("DexAggregator:RouterSwap", async ({ event, context }) => {
 
   // Check for first $1k, $10k, $100k swaps and assign points accordingly
   if (
-    userData.usdValueOfSwaps + usdValueOfTrade >=
-      BIGINT_THOUSAND * MINIMUM_POINTS &&
+    userData.usdValueOfSwaps >= BIGINT_THOUSAND * MINIMUM_POINTS &&
     !userData.first1kSwaps
   ) {
     await Points.create({
@@ -432,8 +431,7 @@ ponder.on("DexAggregator:RouterSwap", async ({ event, context }) => {
   }
 
   if (
-    userData.usdValueOfSwaps + usdValueOfTrade >=
-      BIGINT_TEN_THOUSAND * MINIMUM_POINTS &&
+    userData.usdValueOfSwaps >= BIGINT_TEN_THOUSAND * MINIMUM_POINTS &&
     !userData.first10kSwaps
   ) {
     await Points.create({
@@ -461,8 +459,7 @@ ponder.on("DexAggregator:RouterSwap", async ({ event, context }) => {
   }
 
   if (
-    userData.usdValueOfSwaps + usdValueOfTrade >=
-      BIGINT_HUNDRED_THOUSAND * MINIMUM_POINTS &&
+    userData.usdValueOfSwaps >= BIGINT_HUNDRED_THOUSAND * MINIMUM_POINTS &&
     !userData.first100kSwaps
   ) {
     await Points.create({
