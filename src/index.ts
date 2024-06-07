@@ -5,6 +5,7 @@ import {
   getTokenId,
   getOrUpdateTokenIdData,
   handleChainFirstWallet,
+  getOrUpdateWalletsPerTier,
 } from "./helpers";
 import {
   BIGINT_HUNDRED_THOUSAND,
@@ -43,6 +44,8 @@ ponder.on("Stratosphere:Transfer", async ({ event, context }) => {
   await getOrUpdateTokenIdData(context, tokenId, timestamp, {
     pointsEarned: pointsMap.Enrollment,
   });
+
+  await getOrUpdateWalletsPerTier(context, 0n, userAddressLowerCase);
 });
 
 ponder.on("LiquidMining:Deposit", async ({ event, context }) => {
@@ -493,4 +496,13 @@ ponder.on("RewardsController:ClaimPoints", async ({ event, context }) => {
   await getOrUpdateTokenIdData(context, tokenId, timestamp, {
     pointsClaimed: points,
   });
+
+  const tier = await context.client.readContract({
+    abi: context.contracts.RewardsController.abi,
+    address: context.contracts.RewardsController.address as `0x${string}`,
+    functionName: "tierOf",
+    args: [tokenId],
+  });
+
+  await getOrUpdateWalletsPerTier(context, tier, event.args.member);
 });

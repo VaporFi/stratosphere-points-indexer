@@ -392,3 +392,37 @@ export async function getOrUpdateTokenIdData(
 
   return tokenIdData;
 }
+
+export async function getOrUpdateWalletsPerTier(
+  context: Context,
+  tierId: bigint,
+  userAddress: string
+): Promise<any> {
+  const { WalletsPerTier } = context.db;
+  const { chainId } = context.network;
+
+  const id = `${tierId}-${chainId}`;
+
+  let walletsPerTier = await WalletsPerTier.findUnique({ id });
+
+  if (!walletsPerTier) {
+    walletsPerTier = await WalletsPerTier.create({
+      id,
+      data: {
+        wallets: [userAddress],
+      },
+    });
+  }
+
+  if (!walletsPerTier.wallets.includes(userAddress)) {
+    walletsPerTier.wallets.push(userAddress);
+    walletsPerTier = await WalletsPerTier.update({
+      id,
+      data: {
+        wallets: walletsPerTier.wallets,
+      },
+    });
+  }
+
+  return walletsPerTier;
+}
