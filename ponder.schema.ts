@@ -145,4 +145,12 @@ export default createSchema((p) => ({
     pointsSpent: p.bigint(),
     lastUpdated: p.bigint(),
   }),
+
+  // @dev: Id is the tierId + chainId
+  // @dev: The tierId is the tier number
+  // @dev: wallets is the number of wallets in the tier
+  WalletsPerTier: p.createTable({
+    id: p.string(),
+    wallets: p.string().list(),
+  }),
 }));
