@@ -22,3 +22,5 @@ function encodeLeaf(tokenId, points) {
 }
 
 getMerkleRoot(43114).catch((error) => console.error(error));
+
+module.exports = getMerkleRoot;
