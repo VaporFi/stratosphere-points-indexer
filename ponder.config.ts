@@ -29,8 +29,11 @@ export default createConfig({
       abi: DexAggregatorAbi,
       network: {
         avalanche: {
-          address: addresses.DexAggregator?.avalanche,
-          startBlock: 42346292,
+          address: [
+            addresses.DexAggregator?.avalanche!,
+            addresses.DexAggregatorV2?.avalanche!,
+          ],
+          startBlock: 20308160,
           maxBlockRange,
         },
       },
@@ -62,7 +65,7 @@ export default createConfig({
       network: {
         avalanche: {
           address: addresses.VapeStaking?.avalanche,
-          startBlock: 32271032,
+          startBlock: 33291048,
           maxBlockRange,
         },
       },
@@ -73,7 +76,7 @@ export default createConfig({
       network: {
         avalanche: {
           address: addresses.RewardsController?.avalanche,
-          startBlock: 43805790, // TODO: Update this
+          startBlock: 43508160, // TODO: Update this
           maxBlockRange,
         },
       },

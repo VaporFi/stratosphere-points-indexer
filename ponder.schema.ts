@@ -40,7 +40,9 @@ const generateLMSeasonEnum = (numSeasons: number) => {
  */
 const pointsSource = [
   "stratosphere_enrollment",
+  "chain_first_wallet",
   "dex_aggregator_swap",
+  "dex_aggregator_first_swap",
   "dex_aggregator_1k_swaps",
   "dex_aggregator_10k_swaps",
   "dex_aggregator_100k_swaps",
@@ -85,12 +87,16 @@ export default createSchema((p) => ({
     chainId: p.int(),
     LMSeasons: p.bigint().list(), // If the array is empty, the user has not participated in any season
     depositInVS: p.boolean(),
+    chainFirstWallet: p.boolean(),
+    firstWalletInVPNDLM: p.boolean(),
+    firstWalletInVAPELM: p.boolean(),
     LMOneSeasonPointsClaimed: p.boolean(),
     LMThreeSeasonsPointsClaimed: p.boolean(),
     LMSixSeasonsPointsClaimed: p.boolean(),
     LMOneYearPointsClaimed: p.boolean(),
     usdValueOfSwaps: p.bigint(),
     swaps: p.bigint(),
+    firstSwap: p.boolean(),
     first1kSwaps: p.boolean(),
     first10kSwaps: p.boolean(),
     first100kSwaps: p.boolean(),
@@ -103,6 +109,8 @@ export default createSchema((p) => ({
     isMainWallet: p.boolean(),
     chainId: p.int(),
   }),
+
+  AllProtocols: p.createTable({ id: p.string(), firstWallet: p.string() }),
 
   // @dev: Id is the seasonId
   LiquidMining: p.createTable({
@@ -136,5 +144,13 @@ export default createSchema((p) => ({
     pointsClaimed: p.bigint(),
     pointsSpent: p.bigint(),
     lastUpdated: p.bigint(),
+  }),
+
+  // @dev: Id is the tierId + chainId
+  // @dev: The tierId is the tier number
+  // @dev: wallets is the number of wallets in the tier
+  WalletsPerTier: p.createTable({
+    id: p.string(),
+    wallets: p.string().list(),
   }),
 }));

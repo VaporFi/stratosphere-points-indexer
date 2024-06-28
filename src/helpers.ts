@@ -14,6 +14,7 @@ import {
   BIGINT_ONE,
   BIGINT_ZERO,
   deployedBlockTimestamps,
+  pointsMap,
 } from "./config/constants";
 import axios from "axios";
 
@@ -57,6 +58,40 @@ export function getMonthlyID(
   return monthlyID + 1n;
 }
 
+export const handleChainFirstWallet = async (
+  context: Context,
+  chainId: number,
+  userAddressLowerCase: string,
+  userData: any,
+  event: any
+): Promise<UserHistory> => {
+  const { AllProtocols, UserHistory, Points } = context.db;
+  let allProtocols = await AllProtocols.findUnique({ id: "protocols" });
+  if (!allProtocols) {
+    allProtocols = await AllProtocols.create({
+      id: "protocols",
+      data: { firstWallet: userAddressLowerCase },
+    });
+    await Points.create({
+      id: `${userAddressLowerCase}-chain-first-wallet`,
+      data: {
+        userDataId: `${userAddressLowerCase}-${chainId}`,
+        userHistoryId: `${userAddressLowerCase}-${chainId}`,
+        pointsSource: "chain_first_wallet",
+        points: pointsMap.ChainFirstWallet,
+        chainId: chainId,
+        timestamp: event?.block?.timestamp,
+      },
+    });
+
+    userData = await UserHistory.update({
+      id: `${userAddressLowerCase}-${chainId}`,
+      data: { chainFirstWallet: true },
+    });
+  }
+  return userData;
+};
+
 /**
  * Retrieves or creates user data based on the provided parameters.
  * @param context - The context object containing the database connection.
@@ -97,6 +132,10 @@ export async function getOrCreateUserData(
         first10kSwaps: false,
         first100kSwaps: false,
         chainId: chainId,
+        firstWalletInVPNDLM: false,
+        firstSwap: false,
+        firstWalletInVAPELM: false,
+        chainFirstWallet: false,
       },
     });
 
@@ -122,7 +161,8 @@ export async function getOrCreateUserData(
 export async function queryQuote(
   quoteParams: QueryWithAmountIn,
   context: Context,
-  blockNumber: bigint
+  blockNumber: bigint,
+  aggregatorAddress: `0x${string}`
 ): Promise<bigint> {
   const { client, network, contracts } = context;
 
@@ -132,7 +172,7 @@ export async function queryQuote(
     try {
       quote = await client.readContract({
         abi: contracts.DexAggregator.abi,
-        address: addresses.DexAggregator![network.name] as `0x${string}`,
+        address: aggregatorAddress,
         functionName: "findBestPath",
         args: [
           quoteParams.amountIn,
@@ -292,7 +332,10 @@ export async function getOrUpdateTokenIdData(
   const { chainId, name } = context.network;
 
   const deployedBlockTimestamp = deployedBlockTimestamps[name].Stratosphere;
-  const weeklyId = `${tokenId}-${chainId}-${getWeeklyID(timestamp, deployedBlockTimestamp)}`;
+  const weeklyId = `${tokenId}-${chainId}-${getWeeklyID(
+    timestamp,
+    deployedBlockTimestamp
+  )}`;
 
   let tokenIdData = await TokenIdData.findUnique({
     id: `${tokenId}-${chainId}`,
@@ -348,4 +391,38 @@ export async function getOrUpdateTokenIdData(
   });
 
   return tokenIdData;
+}
+
+export async function getOrUpdateWalletsPerTier(
+  context: Context,
+  tierId: bigint,
+  userAddress: string
+): Promise<any> {
+  const { WalletsPerTier } = context.db;
+  const { chainId } = context.network;
+
+  const id = `${tierId}-${chainId}`;
+
+  let walletsPerTier = await WalletsPerTier.findUnique({ id });
+
+  if (!walletsPerTier) {
+    walletsPerTier = await WalletsPerTier.create({
+      id,
+      data: {
+        wallets: [userAddress],
+      },
+    });
+  }
+
+  if (!walletsPerTier.wallets.includes(userAddress)) {
+    walletsPerTier.wallets.push(userAddress);
+    walletsPerTier = await WalletsPerTier.update({
+      id,
+      data: {
+        wallets: walletsPerTier.wallets,
+      },
+    });
+  }
+
+  return walletsPerTier;
 }
