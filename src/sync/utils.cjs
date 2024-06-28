@@ -1,8 +1,6 @@
 require("dotenv").config();
 const postgres = require("postgres");
-const sql = postgres(
-  "postgres://postgres:puAvmeeWK5FBzbSFUED7TplDe2Ez8r3BVhesojTtwB4GKtxkCdpXRjXDCSZRdCks@108.61.156.15:5432/postgres"
-);
+const sql = postgres(process.env.DATABASE_URL);
 
 async function getAllPoints(chainId) {
   console.log(
