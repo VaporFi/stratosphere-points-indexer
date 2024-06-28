@@ -6,6 +6,7 @@ const getCombinedPoints = require("./utils.cjs");
 
 async function getMerkleRoot(chainId) {
   const data = await getCombinedPoints(chainId);
+  console.log("Generating Merkle Root........");
   const leaves = Object.keys(data).map((tokenId) => {
     return encodeLeaf(tokenId, data[tokenId]);
   });
@@ -20,7 +21,5 @@ function encodeLeaf(tokenId, points) {
   const leaf = encoder.encode(["uint256", "uint256"], [tokenId, points]);
   return leaf;
 }
-
-getMerkleRoot(43114).catch((error) => console.error(error));
 
 module.exports = getMerkleRoot;

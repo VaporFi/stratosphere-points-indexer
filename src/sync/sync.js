@@ -12,7 +12,7 @@ const abi = parseAbi([
 
 const KEY = process.env.ORACLE_PRIVATE_KEY || "";
 
-async function sync() {
+async function sync(chainId) {
   const account = privateKeyToAccount(KEY);
 
   const client = createWalletClient({
@@ -21,7 +21,7 @@ async function sync() {
     transport: http(),
   });
 
-  const root = await getMerkleRoot(43114);
+  const root = await getMerkleRoot(chainId);
 
   const tx = await client.writeContract({
     address: "0x",
@@ -33,4 +33,4 @@ async function sync() {
   console.log(tx);
 }
 
-sync().catch(console.error);
+sync(chainId).catch(console.error);

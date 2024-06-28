@@ -1,8 +1,14 @@
 require("dotenv").config();
 const postgres = require("postgres");
-const sql = postgres(process.env.DATABASE_URL);
+const sql = postgres(
+  "postgres://postgres:puAvmeeWK5FBzbSFUED7TplDe2Ez8r3BVhesojTtwB4GKtxkCdpXRjXDCSZRdCks@108.61.156.15:5432/postgres"
+);
 
 async function getAllPoints(chainId) {
+  console.log(
+    "Fetching all points from the database for the chainId: ",
+    chainId
+  );
   const userIdPoint = await sql`
     SELECT "userDataId",  "points"
     FROM public."Points"
@@ -24,8 +30,9 @@ async function getTokenIdByUserId(userId) {
 }
 
 async function getClaimedPoints(chainId) {
+  console.log("Fetching claimed points from the database");
   const claimedPoints = await sql`
-    SELECT "tokenId", "claimedPoints"
+    SELECT "tokenId", "pointsClaimed"
     FROM public."TokenIdData"
     WHERE "chainId" = ${chainId}
     ;`;
@@ -34,6 +41,7 @@ async function getClaimedPoints(chainId) {
 }
 
 async function getCombinedPoints(chainId) {
+  console.log("Fetching combined points for the chainId: ", chainId);
   const allPoints = await getAllPoints(chainId);
 
   const pointsWithTokenId = await Promise.all(
@@ -54,15 +62,19 @@ async function getCombinedPoints(chainId) {
     return acc;
   }, {});
 
-  const claimedPoints = await getClaimedPoints();
+  const claimedPoints = await getClaimedPoints(chainId);
 
   claimedPoints.forEach((data) => {
-    const { tokenId, claimedPoints } = data;
+    const { tokenId } = data;
     if (combinedPointByTokenId[tokenId]) {
-      combinedPointByTokenId[tokenId] -= claimedPoints;
+      combinedPointByTokenId[tokenId] -= data.pointsClaimed;
     }
   });
 
+  console.log(
+    "Successfully fetched combined points for the chainId: ",
+    chainId
+  );
   return combinedPointByTokenId;
 }
 
