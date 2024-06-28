@@ -32,5 +32,3 @@ async function sync(chainId) {
 
   console.log(tx);
 }
-
-sync(chainId).catch(console.error);
