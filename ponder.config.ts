@@ -1,4 +1,4 @@
-import { createConfig } from "@ponder/core";
+import { createConfig, loadBalance } from "@ponder/core";
 import { http } from "viem";
 
 import { DexAggregatorAbi } from "./abis/DexAggregatorAbi";
@@ -17,7 +17,11 @@ export default createConfig({
   networks: {
     avalanche: {
       chainId: 43114,
-      transport: http(rpcMap.avalanche),
+      transport: loadBalance([
+        http("https://api.avax.network/ext/bc/C/rpc"),
+        http("https://rpc.ankr.com/avalanche"),
+        http("https://avalanche-c-chain-rpc.publicnode.com"),
+      ]),
     },
     telos: {
       chainId: 40,
