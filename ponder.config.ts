@@ -19,8 +19,7 @@ export default createConfig({
       chainId: 43114,
       transport: loadBalance([
         http("https://api.avax.network/ext/bc/C/rpc"),
-        http("https://rpc.ankr.com/avalanche"),
-        http("https://avalanche-c-chain-rpc.publicnode.com"),
+        http("https://avalanche.drpc.org"),
       ]),
     },
     telos: {
