@@ -38,6 +38,11 @@ async function getClaimedPoints(chainId) {
   return claimedPoints;
 }
 
+/**
+ *
+ * @param {number} chainId
+ * @returns {Promise<Record<string,string>>} combinedPoints
+ */
 async function getCombinedPoints(chainId) {
   console.log("Fetching combined points for the chainId: ", chainId);
   const allPoints = await getAllPoints(chainId);

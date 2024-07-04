@@ -17,6 +17,7 @@
     "axios": "1.6.7",
     "dotenv": "^16.4.5",
     "ethers": "^6.11.1",
+    "@directus/sdk": "15.0.3",
     "keccak256": "^1.0.6",
     "merkletreejs": "^0.3.11",
     "postgres": "^3.4.4",
