@@ -5,6 +5,9 @@ settings:
   excludeLinksFromLockfile: false
 
 dependencies:
+  '@directus/sdk':
+    specifier: 15.0.3
+    version: 15.0.3
   '@ponder/core':
     specifier: 0.4.13
     version: 0.4.13(@types/node@20.9.0)(typescript@5.2.2)(viem@1.19.3)
@@ -95,6 +98,17 @@ packages:
       commander: ~12.0.0
     dependencies:
       commander: 12.0.0
+    dev: false
+
+  /@directus/sdk@15.0.3:
+    resolution: {integrity: sha512-Z6n1YaXSMSQuYH6ENG1W4lcpyPgfwRzBpEJOXeknAnJlneLeV/+iNtCB8WxjnH8D73Sv72peRLKMQtr/SZDz7Q==}
+    engines: {node: '>=18.0.0'}
+    dependencies:
+      '@directus/system-data': 1.0.1
+    dev: false
+
+  /@directus/system-data@1.0.1:
+    resolution: {integrity: sha512-sm2gO9SUcRle5rCsmS4qby2K8OfvewnU9/Iao7brGyexLjXDrvfxBB2danNWVLw1qE+UrLX/R+caVrxQ4ZaMkw==}
     dev: false
 
   /@esbuild/aix-ppc64@0.19.12:
