@@ -1,3 +1,5 @@
+import { get } from "http";
+
 require("dotenv").config();
 const postgres = require("postgres");
 const sql = postgres(process.env.DATABASE_URL);
@@ -25,6 +27,23 @@ async function getTokenIdByUserId(userId) {
     ;`;
 
   return tokenId;
+}
+
+async function getPointsByTokenId(tokenId, chainId) {
+  const pointsData = await sql`
+    SELECT "pointsEarned", "pointsClaimed"
+    FROM public."TokenIdData"
+    WHERE "tokenId" = ${tokenId} AND "chainId" = ${chainId}
+    ;`;
+
+  if (pointsData.length === 0) {
+    return 0; // or handle as appropriate for no data found
+  }
+
+  const { pointsEarned, pointsClaimed } = pointsData[0];
+  const totalPoints = pointsEarned - pointsClaimed;
+
+  return totalPoints;
 }
 
 async function getClaimedPoints(chainId) {
@@ -76,4 +95,4 @@ async function getCombinedPoints(chainId) {
   return combinedPointByTokenId;
 }
 
-module.exports = getCombinedPoints;
+module.exports = { getCombinedPoints, getPointsByTokenId };
