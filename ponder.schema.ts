@@ -1,4 +1,4 @@
-import { createSchema } from "@ponder/core";
+import { onchainTable, onchainEnum } from "@ponder/core";
 
 /**
  * Generates an enum of liquid mining season values.
@@ -9,11 +9,9 @@ import { createSchema } from "@ponder/core";
  */
 const generateLMSeasonEnum = (numSeasons: number) => {
   const enumValues = [];
-
   for (let i = 1; i <= numSeasons; i++) {
     enumValues.push(`liquid_mining_first_wallet_season_${i}`);
   }
-
   return enumValues;
 };
 
@@ -38,7 +36,7 @@ const generateLMSeasonEnum = (numSeasons: number) => {
  * - "liquid_mining_twelve_seasons": Indexes twelve seasons in Liquid Mining (1000 * 10^6 points)
  * - ...generateLMSeasonEnum(120): Indexes first wallet in a Liquid Mining new season (500 * 10^6 points)
  */
-const pointsSource = [
+export const pointsSourceEnum = onchainEnum("PointsSource", [
   "stratosphere_enrollment",
   "chain_first_wallet",
   "dex_aggregator_swap",
@@ -54,103 +52,94 @@ const pointsSource = [
   "liquid_mining_six_seasons",
   "liquid_mining_twelve_seasons",
   ...generateLMSeasonEnum(120),
-];
+]);
 
-export default createSchema((p) => ({
-  PointsSource: p.createEnum(pointsSource),
-  Points: p.createTable({
-    id: p.string(),
-    // Use enum for points source
-    pointsSource: p.enum("PointsSource"),
-    points: p.bigint().optional(),
+export const points = onchainTable("Points", (t) => ({
+  id: t.text().primaryKey().notNull(),
+  pointsSource: pointsSourceEnum("PointsSource").notNull(),
+  points: t.bigint(),
+  userHistoryId: t.text().notNull(),
+  userDataId: t.text().notNull(),
+  chainId: t.bigint().notNull(),
+  timestamp: t.bigint().notNull(),
+}));
 
-    // Reference to user history
-    userHistoryId: p.string().references("UserHistory.id"),
-    userHistory: p.one("userHistoryId"),
+//////////////////////////////////////////
+////////////// Helper Tables /////////////
+//////////////////////////////////////////
 
-    // Reference to user data
-    userDataId: p.string().references("UserData.id"),
-    userData: p.one("userDataId"),
+// @dev: Id is the user's wallet address + chainId
+export const userHistory = onchainTable("UserHistory", (t) => ({
+  id: t.text().primaryKey().notNull(),
+  chainId: t.bigint().notNull(),
+  LMSeasons: t.bigint().array().notNull(), // If the array is empty, the user has not participated in any season
+  depositInVS: t.boolean().notNull(),
+  chainFirstWallet: t.boolean().notNull(),
+  firstWalletInVPNDLM: t.boolean().notNull(),
+  firstWalletInVAPELM: t.boolean().notNull(),
+  LMOneSeasonPointsClaimed: t.boolean().notNull(),
+  LMThreeSeasonsPointsClaimed: t.boolean().notNull(),
+  LMSixSeasonsPointsClaimed: t.boolean().notNull(),
+  LMOneYearPointsClaimed: t.boolean().notNull(),
+  usdValueOfSwaps: t.bigint().notNull(),
+  swaps: t.bigint().notNull(),
+  firstSwap: t.boolean().notNull(),
+  first1kSwaps: t.boolean().notNull(),
+  first10kSwaps: t.boolean().notNull(),
+  first100kSwaps: t.boolean().notNull(),
+}));
 
-    // Chain data
-    chainId: p.int(),
-    timestamp: p.bigint(),
-  }),
+// @dev: Id is the user's wallet address + chainId
+export const userData = onchainTable("UserData", (t) => ({
+  id: t.text().primaryKey().notNull(),
+  linkedToTokenId: t.bigint().notNull(),
+  isMainWallet: t.boolean().notNull(),
+  chainId: t.bigint().notNull(),
+}));
 
-  //////////////////////////////////////////
-  ////////////// Helper Tables /////////////
-  //////////////////////////////////////////
+export const allProtocols = onchainTable("AllProtocols", (t) => ({
+  id: t.text().primaryKey().notNull(),
+  firstWallet: t.text().notNull(),
+}));
 
-  // @dev: Id is the user's wallet address + chainId
-  UserHistory: p.createTable({
-    id: p.string(),
-    chainId: p.int(),
-    LMSeasons: p.bigint().list(), // If the array is empty, the user has not participated in any season
-    depositInVS: p.boolean(),
-    chainFirstWallet: p.boolean(),
-    firstWalletInVPNDLM: p.boolean(),
-    firstWalletInVAPELM: p.boolean(),
-    LMOneSeasonPointsClaimed: p.boolean(),
-    LMThreeSeasonsPointsClaimed: p.boolean(),
-    LMSixSeasonsPointsClaimed: p.boolean(),
-    LMOneYearPointsClaimed: p.boolean(),
-    usdValueOfSwaps: p.bigint(),
-    swaps: p.bigint(),
-    firstSwap: p.boolean(),
-    first1kSwaps: p.boolean(),
-    first10kSwaps: p.boolean(),
-    first100kSwaps: p.boolean(),
-  }),
+// @dev: Id is the seasonId
+export const liquidMining = onchainTable("LiquidMining", (t) => ({
+  id: t.bigint().primaryKey().notNull(),
+  firstWallet: t.text().notNull(),
+}));
 
-  // @dev: Id is the user's wallet address + chainId
-  UserData: p.createTable({
-    id: p.string(),
-    linkedToTokenId: p.bigint(),
-    isMainWallet: p.boolean(),
-    chainId: p.int(),
-  }),
+export const vapeStaking = onchainTable("VapeStaking", (t) => ({
+  id: t.text().primaryKey().notNull(),
+  firstWallet: t.text().notNull(),
+  txnHash: t.text().notNull(),
+}));
 
-  AllProtocols: p.createTable({ id: p.string(), firstWallet: p.string() }),
+// @dev: Id is the tokenId + chainId
+export const tokenIdData = onchainTable("TokenIdData", (t) => ({
+  id: t.text().primaryKey().notNull(),
+  tokenId: t.bigint().notNull(),
+  chainId: t.bigint().notNull(),
+  pointsEarned: t.bigint().notNull(),
+  pointsClaimed: t.bigint().notNull(),
+  pointsSpent: t.bigint().notNull(),
+  lastUpdated: t.bigint().notNull(),
+}));
 
-  // @dev: Id is the seasonId
-  LiquidMining: p.createTable({
-    id: p.bigint(),
-    firstWallet: p.string(),
-  }),
+// @dev: Id is the tokenId + chainId + weekId
+export const tokenIdDataWeekly = onchainTable("TokenIdDataWeekly", (t) => ({
+  id: t.text().primaryKey().notNull(),
+  tokenId: t.bigint().notNull(),
+  chainId: t.bigint().notNull(),
+  pointsEarned: t.bigint().notNull(),
+  pointsClaimed: t.bigint().notNull(),
+  pointsSpent: t.bigint().notNull(),
+  lastUpdated: t.bigint().notNull(),
+}));
 
-  VapeStaking: p.createTable({
-    id: p.string(),
-    firstWallet: p.string(),
-    txnHash: p.string(),
-  }),
-
-  // @dev: Id is the tokenId + chainId
-  TokenIdData: p.createTable({
-    id: p.string(),
-    tokenId: p.bigint(),
-    chainId: p.int(),
-    pointsEarned: p.bigint(),
-    pointsClaimed: p.bigint(),
-    pointsSpent: p.bigint(),
-    lastUpdated: p.bigint(),
-  }),
-
-  // @dev: Id is the tokenId + chainId + weekId
-  TokenIdDataWeekly: p.createTable({
-    id: p.string(),
-    tokenId: p.bigint(),
-    chainId: p.int(),
-    pointsEarned: p.bigint(),
-    pointsClaimed: p.bigint(),
-    pointsSpent: p.bigint(),
-    lastUpdated: p.bigint(),
-  }),
-
-  // @dev: Id is the tierId + chainId
-  // @dev: The tierId is the tier number
-  // @dev: wallets is the number of wallets in the tier
-  WalletsPerTier: p.createTable({
-    id: p.string(),
-    wallets: p.string().list(),
-  }),
+// @dev: Id is the tierId + chainId
+// @dev: The tierId is the tier number
+// @dev: wallets is the number of wallets in the tier
+export const walletsPerTier = onchainTable("WalletsPerTier", (t) => ({
+  id: t.text().primaryKey().notNull(),
+  wallets: t.text().array().notNull(),
 }));
