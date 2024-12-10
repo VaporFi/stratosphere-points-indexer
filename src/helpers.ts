@@ -94,7 +94,7 @@ export const handleChainFirstWallet = async (
     });
 
     userData = await db
-      .update(userHistoryTable, { id: `${userAddressLowerCase}-${chainId}` })
+      .update(userHistoryTable, { id: userData.id })
       .set((row) => ({
         chainFirstWallet: true,
       }));

@@ -266,19 +266,17 @@ ponder.on("VapeStaking:Deposit", async ({ event, context }) => {
 
     await db.insert(pointsTable).values({
       id: `${hash}-vape-staking-first-wallet`,
-      userDataId: `${userAddressLowerCase}-${chainId}`,
-      userHistoryId: `${userAddressLowerCase}-${chainId}`,
+      userDataId: userData.id,
+      userHistoryId: userData.id,
       pointsSource: "vape_staking_first_wallet",
       points: pointsMap.FirstWalletInVAPELM,
       chainId: chainId,
       timestamp: timestamp,
     });
 
-    userData = await db
-      .update(userHistoryTable, { id: `${userAddressLowerCase}-${chainId}` })
-      .set({
-        firstWalletInVAPELM: true,
-      });
+    userData = await db.update(userHistoryTable, { id: userData.id }).set({
+      firstWalletInVAPELM: true,
+    });
 
     await getOrUpdateTokenIdData(context, tokenId, timestamp, {
       pointsEarned: pointsMap.FirstWalletInVAPELM,
@@ -288,8 +286,8 @@ ponder.on("VapeStaking:Deposit", async ({ event, context }) => {
   if (!userData.depositInVS) {
     await db.insert(pointsTable).values({
       id: `${hash}-vape-staking-first-deposit`,
-      userDataId: `${userAddressLowerCase}-${chainId}`,
-      userHistoryId: `${userAddressLowerCase}-${chainId}`,
+      userDataId: userData.id,
+      userHistoryId: userData.id,
       pointsSource: "vape_staking_first_deposit",
       points: pointsMap.FirstDepositInVAPELM,
       chainId: chainId,
@@ -300,11 +298,9 @@ ponder.on("VapeStaking:Deposit", async ({ event, context }) => {
       pointsEarned: pointsMap.FirstDepositInVAPELM,
     });
 
-    userData = await db
-      .update(userHistoryTable, { id: `${userAddressLowerCase}-${chainId}` })
-      .set({
-        depositInVS: true,
-      });
+    userData = await db.update(userHistoryTable, { id: userData.id }).set({
+      depositInVS: true,
+    });
   }
 });
 
@@ -348,8 +344,8 @@ ponder.on("DexAggregator:RouterSwap", async ({ event, context }) => {
   if (usdValueOfTrade >= MINIMUM_POINTS) {
     await db.insert(pointsTable).values({
       id: `${hash}-dex-aggregator-swap`,
-      userDataId: `${userAddressLowerCase}-${chainId}`,
-      userHistoryId: `${userAddressLowerCase}-${chainId}`,
+      userDataId: userData.id,
+      userHistoryId: userData.id,
       pointsSource: "dex_aggregator_swap",
       points: usdValueOfTrade,
       chainId: chainId,
@@ -363,13 +359,13 @@ ponder.on("DexAggregator:RouterSwap", async ({ event, context }) => {
 
   if (!userData.firstSwap) {
     userData = await db
-      .update(userHistoryTable, { id: `${userAddressLowerCase}-${chainId}` })
+      .update(userHistoryTable, { id: userData.id })
       .set({ firstSwap: true });
 
     await db.insert(pointsTable).values({
       id: `${hash}-dex-aggregator-first-swap`,
-      userDataId: `${userAddressLowerCase}-${chainId}`,
-      userHistoryId: `${userAddressLowerCase}-${chainId}`,
+      userDataId: userData.id,
+      userHistoryId: userData.id,
       pointsSource: "dex_aggregator_first_swap",
       points: pointsMap.FirstSwap,
       chainId: chainId,
@@ -378,12 +374,10 @@ ponder.on("DexAggregator:RouterSwap", async ({ event, context }) => {
   }
 
   // Update total swaps and total USD value of swaps
-  userData = await db
-    .update(userHistoryTable, { id: `${userAddressLowerCase}-${chainId}` })
-    .set({
-      usdValueOfSwaps: userData.usdValueOfSwaps + usdValueOfTrade,
-      swaps: userData.swaps + BIGINT_ONE,
-    });
+  userData = await db.update(userHistoryTable, { id: userData.id }).set({
+    usdValueOfSwaps: userData.usdValueOfSwaps + usdValueOfTrade,
+    swaps: userData.swaps + BIGINT_ONE,
+  });
 
   // Check for first $1k, $10k, $100k swaps and assign points accordingly
   if (
@@ -392,8 +386,8 @@ ponder.on("DexAggregator:RouterSwap", async ({ event, context }) => {
   ) {
     await db.insert(pointsTable).values({
       id: `${hash}-dex-aggregator-1k-swaps`,
-      userDataId: `${userAddressLowerCase}-${chainId}`,
-      userHistoryId: `${userAddressLowerCase}-${chainId}`,
+      userDataId: userData.id,
+      userHistoryId: userData.id,
       pointsSource: "dex_aggregator_1k_swaps",
       points: pointsMap.ThousandSwaps,
       chainId: chainId,
@@ -404,11 +398,9 @@ ponder.on("DexAggregator:RouterSwap", async ({ event, context }) => {
       pointsEarned: pointsMap.ThousandSwaps,
     });
 
-    userData = await db
-      .update(userHistoryTable, { id: `${userAddressLowerCase}-${chainId}` })
-      .set({
-        first1kSwaps: true,
-      });
+    userData = await db.update(userHistoryTable, { id: userData.id }).set({
+      first1kSwaps: true,
+    });
   }
 
   if (
@@ -417,8 +409,8 @@ ponder.on("DexAggregator:RouterSwap", async ({ event, context }) => {
   ) {
     await db.insert(pointsTable).values({
       id: `${hash}-dex-aggregator-10k-swaps`,
-      userDataId: `${userAddressLowerCase}-${chainId}`,
-      userHistoryId: `${userAddressLowerCase}-${chainId}`,
+      userDataId: userData.id,
+      userHistoryId: userData.id,
       pointsSource: "dex_aggregator_10k_swaps",
       points: pointsMap.TenThousandSwaps,
       chainId: chainId,
@@ -429,11 +421,9 @@ ponder.on("DexAggregator:RouterSwap", async ({ event, context }) => {
       pointsEarned: pointsMap.TenThousandSwaps,
     });
 
-    userData = await db
-      .update(userHistoryTable, { id: `${userAddressLowerCase}-${chainId}` })
-      .set({
-        first10kSwaps: true,
-      });
+    userData = await db.update(userHistoryTable, { id: userData.id }).set({
+      first10kSwaps: true,
+    });
   }
 
   if (
@@ -442,8 +432,8 @@ ponder.on("DexAggregator:RouterSwap", async ({ event, context }) => {
   ) {
     await db.insert(pointsTable).values({
       id: `${hash}-dex-aggregator-100k-swaps`,
-      userDataId: `${userAddressLowerCase}-${chainId}`,
-      userHistoryId: `${userAddressLowerCase}-${chainId}`,
+      userDataId: userData.id,
+      userHistoryId: userData.id,
       pointsSource: "dex_aggregator_100k_swaps",
       points: pointsMap.HundredThousandSwaps,
       chainId: chainId,
@@ -454,11 +444,9 @@ ponder.on("DexAggregator:RouterSwap", async ({ event, context }) => {
       pointsEarned: pointsMap.HundredThousandSwaps,
     });
 
-    userData = await db
-      .update(userHistoryTable, { id: `${userAddressLowerCase}-${chainId}` })
-      .set({
-        first100kSwaps: true,
-      });
+    userData = await db.update(userHistoryTable, { id: userData.id }).set({
+      first100kSwaps: true,
+    });
   }
 });
 
