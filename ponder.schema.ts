@@ -94,7 +94,7 @@ export const userDataTable = onchainTable("UserData", (t) => ({
   id: t.text().primaryKey().notNull(),
   linkedToTokenId: t.bigint().notNull(),
   isMainWallet: t.boolean().notNull(),
-  chainId: t.bigint().notNull(),
+  chainId: t.integer().notNull(),
 }));
 
 export const allProtocolsTable = onchainTable("AllProtocols", (t) => ({

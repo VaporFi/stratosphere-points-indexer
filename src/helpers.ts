@@ -151,7 +151,7 @@ export async function getOrCreateUserData(
       id: `${address}-${chainId}`,
       linkedToTokenId: tokenId,
       isMainWallet: address === mainWallet,
-      chainId: BigInt(chainId),
+      chainId: chainId,
     });
   }
 
