@@ -37,7 +37,6 @@ export default createConfig({
             addresses.DexAggregatorV2?.avalanche!,
           ],
           startBlock: 20308160,
-          maxBlockRange,
         },
       },
     },
@@ -47,7 +46,6 @@ export default createConfig({
         avalanche: {
           address: addresses.Stratosphere?.avalanche,
           startBlock: 20310567,
-          maxBlockRange,
         },
       },
     },
@@ -58,7 +56,6 @@ export default createConfig({
         avalanche: {
           address: addresses.LiquidMining?.avalanche,
           startBlock: 32271032,
-          maxBlockRange,
         },
       },
     },
@@ -69,7 +66,6 @@ export default createConfig({
         avalanche: {
           address: addresses.VapeStaking?.avalanche,
           startBlock: 33291048,
-          maxBlockRange,
         },
       },
     },
@@ -80,7 +76,6 @@ export default createConfig({
         avalanche: {
           address: addresses.RewardsController?.avalanche,
           startBlock: 43508160, // TODO: Update this
-          maxBlockRange,
         },
       },
     },
