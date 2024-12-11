@@ -14,8 +14,6 @@ export interface Quote {
   gasEstimate: bigint;
 }
 
-export type Points = Context["db"]["Points"];
-
 export interface UserLMData {
   id: string;
   isMainWallet: boolean;
