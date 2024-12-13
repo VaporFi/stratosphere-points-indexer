@@ -1,5 +1,3 @@
-import { type Context } from "@/generated";
-
 export interface QueryWithAmountIn {
   amountIn: bigint;
   tokenIn: `0x${string}`;

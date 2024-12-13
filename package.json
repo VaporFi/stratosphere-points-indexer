@@ -13,7 +13,7 @@
     "docker:run": "docker run --env-file .env -p 3000:3000 stratosphere-points-indexer"
   },
   "dependencies": {
-    "@ponder/core": "0.8.0-next.1",
+    "ponder": "0.8.2",
     "abitype": "0.10.2",
     "axios": "1.7.7",
     "dotenv": "^16.4.5",

@@ -1,4 +1,4 @@
-import { onchainTable, onchainEnum } from "@ponder/core";
+import { onchainTable, onchainEnum } from "ponder";
 
 /**
  * Generates an enum of liquid mining season values.
