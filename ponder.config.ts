@@ -1,4 +1,4 @@
-import { createConfig, loadBalance } from "@ponder/core";
+import { createConfig, loadBalance } from "ponder";
 import { http } from "viem";
 
 import { DexAggregatorAbi } from "./abis/DexAggregatorAbi";

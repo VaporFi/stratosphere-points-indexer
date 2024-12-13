@@ -1,4 +1,4 @@
-import { ponder } from "@/generated";
+import { ponder } from "ponder:registry";
 import {
   getOrCreateUserData,
   queryQuote,
@@ -21,16 +21,7 @@ import {
 } from "./config/constants";
 import { Address } from "viem";
 
-import {
-  userDataTable,
-  userHistoryTable,
-  liquidMiningTable,
-  vapeStakingTable,
-  tokenIdDataTable,
-  tokenIdDataWeeklyTable,
-  walletsPerTierTable,
-  pointsTable,
-} from "../ponder.schema";
+import schema, { pointsTable } from "ponder:schema";
 
 ponder.on("Stratosphere:Transfer", async ({ event, context }) => {
   const { db } = context;
@@ -41,7 +32,7 @@ ponder.on("Stratosphere:Transfer", async ({ event, context }) => {
   const userAddressLowerCase = userAddress?.toLowerCase();
   await getOrCreateUserData(context, tokenId, userAddressLowerCase);
 
-  await db.insert(pointsTable).values({
+  await db.insert(schema.pointsTable).values({
     id: `${hash}-stratosphere-enrollment`,
     userDataId: `${userAddressLowerCase}-${chainId}`,
     userHistoryId: `${userAddressLowerCase}-${chainId}`,
@@ -84,15 +75,17 @@ ponder.on("LiquidMining:Deposit", async ({ event, context }) => {
     event
   );
 
-  let liquidMiningData = await db.find(liquidMiningTable, { id: seasonId });
+  let liquidMiningData = await db.find(schema.liquidMiningTable, {
+    id: seasonId,
+  });
 
   if (!liquidMiningData) {
-    liquidMiningData = await db.insert(liquidMiningTable).values({
+    liquidMiningData = await db.insert(schema.liquidMiningTable).values({
       id: seasonId,
       firstWallet: userAddressLowerCase,
     });
 
-    await db.insert(pointsTable).values({
+    await db.insert(schema.pointsTable).values({
       id: `${hash}-liquid-mining-first-wallet`,
       userDataId: `${userAddressLowerCase}-${chainId}`,
       userHistoryId: `${userAddressLowerCase}-${chainId}`,
@@ -103,7 +96,9 @@ ponder.on("LiquidMining:Deposit", async ({ event, context }) => {
     });
 
     userData = await db
-      .update(userHistoryTable, { id: `${userAddressLowerCase}-${chainId}` })
+      .update(schema.userHistoryTable, {
+        id: `${userAddressLowerCase}-${chainId}`,
+      })
       .set({
         firstWalletInVPNDLM: true,
       });
@@ -114,7 +109,7 @@ ponder.on("LiquidMining:Deposit", async ({ event, context }) => {
   }
 
   if (userData.LMSeasons.length === 0) {
-    await db.insert(pointsTable).values({
+    await db.insert(schema.pointsTable).values({
       id: `${hash}-liquid-mining-first-deposit`,
       userDataId: `${userAddressLowerCase}-${chainId}`,
       userHistoryId: `${userAddressLowerCase}-${chainId}`,
@@ -128,7 +123,7 @@ ponder.on("LiquidMining:Deposit", async ({ event, context }) => {
       pointsEarned: pointsMap.FirstDepositInVPNDLM,
     });
 
-    await db.insert(pointsTable).values({
+    await db.insert(schema.pointsTable).values({
       id: `${hash}-liquid-mining-one-season`,
       userDataId: `${userAddressLowerCase}-${chainId}`,
       userHistoryId: `${userAddressLowerCase}-${chainId}`,
@@ -143,7 +138,9 @@ ponder.on("LiquidMining:Deposit", async ({ event, context }) => {
     });
 
     userData = await db
-      .update(userHistoryTable, { id: `${userAddressLowerCase}-${chainId}` })
+      .update(schema.userHistoryTable, {
+        id: `${userAddressLowerCase}-${chainId}`,
+      })
       .set({
         LMSeasons: [seasonId],
         LMOneSeasonPointsClaimed: true,
@@ -152,7 +149,9 @@ ponder.on("LiquidMining:Deposit", async ({ event, context }) => {
 
   if (!userData.LMSeasons.includes(seasonId)) {
     userData = await db
-      .update(userHistoryTable, { id: `${userAddressLowerCase}-${chainId}` })
+      .update(schema.userHistoryTable, {
+        id: `${userAddressLowerCase}-${chainId}`,
+      })
       .set({
         LMSeasons: [...userData.LMSeasons, seasonId],
       });
@@ -162,7 +161,7 @@ ponder.on("LiquidMining:Deposit", async ({ event, context }) => {
     userData.LMSeasons.length === 3 &&
     !userData.LMThreeSeasonsPointsClaimed
   ) {
-    await db.insert(pointsTable).values({
+    await db.insert(schema.pointsTable).values({
       id: `${hash}-liquid-mining-three-seasons`,
       userDataId: `${userAddressLowerCase}-${chainId}`,
       userHistoryId: `${userAddressLowerCase}-${chainId}`,
@@ -177,14 +176,16 @@ ponder.on("LiquidMining:Deposit", async ({ event, context }) => {
     });
 
     userData = await db
-      .update(userHistoryTable, { id: `${userAddressLowerCase}-${chainId}` })
+      .update(schema.userHistoryTable, {
+        id: `${userAddressLowerCase}-${chainId}`,
+      })
       .set({
         LMThreeSeasonsPointsClaimed: true,
       });
   }
 
   if (userData.LMSeasons.length === 6 && !userData.LMSixSeasonsPointsClaimed) {
-    await db.insert(pointsTable).values({
+    await db.insert(schema.pointsTable).values({
       id: `${hash}-liquid-mining-six-seasons`,
       userDataId: `${userAddressLowerCase}-${chainId}`,
       userHistoryId: `${userAddressLowerCase}-${chainId}`,
@@ -199,14 +200,16 @@ ponder.on("LiquidMining:Deposit", async ({ event, context }) => {
     });
 
     userData = await db
-      .update(userHistoryTable, { id: `${userAddressLowerCase}-${chainId}` })
+      .update(schema.userHistoryTable, {
+        id: `${userAddressLowerCase}-${chainId}`,
+      })
       .set({
         LMSixSeasonsPointsClaimed: true,
       });
   }
 
   if (userData.LMSeasons.length === 12 && !userData.LMOneYearPointsClaimed) {
-    await db.insert(pointsTable).values({
+    await db.insert(schema.pointsTable).values({
       id: `${hash}-liquid-mining-twelve-seasons`,
       userDataId: `${userAddressLowerCase}-${chainId}`,
       userHistoryId: `${userAddressLowerCase}-${chainId}`,
@@ -221,7 +224,9 @@ ponder.on("LiquidMining:Deposit", async ({ event, context }) => {
     });
 
     userData = await db
-      .update(userHistoryTable, { id: `${userAddressLowerCase}-${chainId}` })
+      .update(schema.userHistoryTable, {
+        id: `${userAddressLowerCase}-${chainId}`,
+      })
       .set({
         LMOneYearPointsClaimed: true,
       });
@@ -253,18 +258,18 @@ ponder.on("VapeStaking:Deposit", async ({ event, context }) => {
     event
   );
 
-  let vapeStakingData = await db.find(vapeStakingTable, {
+  let vapeStakingData = await db.find(schema.vapeStakingTable, {
     id: "vape-staking",
   });
 
   if (!vapeStakingData) {
-    vapeStakingData = await db.insert(vapeStakingTable).values({
+    vapeStakingData = await db.insert(schema.vapeStakingTable).values({
       id: "vape-staking",
       firstWallet: userAddressLowerCase,
       txnHash: hash,
     });
 
-    await db.insert(pointsTable).values({
+    await db.insert(schema.pointsTable).values({
       id: `${hash}-vape-staking-first-wallet`,
       userDataId: userData.id,
       userHistoryId: userData.id,
@@ -274,9 +279,11 @@ ponder.on("VapeStaking:Deposit", async ({ event, context }) => {
       timestamp: timestamp,
     });
 
-    userData = await db.update(userHistoryTable, { id: userData.id }).set({
-      firstWalletInVAPELM: true,
-    });
+    userData = await db
+      .update(schema.userHistoryTable, { id: userData.id })
+      .set({
+        firstWalletInVAPELM: true,
+      });
 
     await getOrUpdateTokenIdData(context, tokenId, timestamp, {
       pointsEarned: pointsMap.FirstWalletInVAPELM,
@@ -284,7 +291,7 @@ ponder.on("VapeStaking:Deposit", async ({ event, context }) => {
   }
 
   if (!userData.depositInVS) {
-    await db.insert(pointsTable).values({
+    await db.insert(schema.pointsTable).values({
       id: `${hash}-vape-staking-first-deposit`,
       userDataId: userData.id,
       userHistoryId: userData.id,
@@ -298,9 +305,11 @@ ponder.on("VapeStaking:Deposit", async ({ event, context }) => {
       pointsEarned: pointsMap.FirstDepositInVAPELM,
     });
 
-    userData = await db.update(userHistoryTable, { id: userData.id }).set({
-      depositInVS: true,
-    });
+    userData = await db
+      .update(schema.userHistoryTable, { id: userData.id })
+      .set({
+        depositInVS: true,
+      });
   }
 });
 
@@ -342,7 +351,7 @@ ponder.on("DexAggregator:RouterSwap", async ({ event, context }) => {
   // For reference: https://github.com/VaporFi/dex-aggregator-v2/blob/cad6410a4cc429df532720bfee209852dbd97be4/src/facets/LegacyRouterFacet.sol#L332
   // If we are unable to find a path, usdValueOfTrade is Zero and we don't want to index that
   if (usdValueOfTrade >= MINIMUM_POINTS) {
-    await db.insert(pointsTable).values({
+    await db.insert(schema.pointsTable).values({
       id: `${hash}-dex-aggregator-swap`,
       userDataId: userData.id,
       userHistoryId: userData.id,
@@ -359,10 +368,10 @@ ponder.on("DexAggregator:RouterSwap", async ({ event, context }) => {
 
   if (!userData.firstSwap) {
     userData = await db
-      .update(userHistoryTable, { id: userData.id })
+      .update(schema.userHistoryTable, { id: userData.id })
       .set({ firstSwap: true });
 
-    await db.insert(pointsTable).values({
+    await db.insert(schema.pointsTable).values({
       id: `${hash}-dex-aggregator-first-swap`,
       userDataId: userData.id,
       userHistoryId: userData.id,
@@ -374,7 +383,7 @@ ponder.on("DexAggregator:RouterSwap", async ({ event, context }) => {
   }
 
   // Update total swaps and total USD value of swaps
-  userData = await db.update(userHistoryTable, { id: userData.id }).set({
+  userData = await db.update(schema.userHistoryTable, { id: userData.id }).set({
     usdValueOfSwaps: userData.usdValueOfSwaps + usdValueOfTrade,
     swaps: userData.swaps + BIGINT_ONE,
   });
@@ -384,7 +393,7 @@ ponder.on("DexAggregator:RouterSwap", async ({ event, context }) => {
     userData.usdValueOfSwaps >= BIGINT_THOUSAND * MINIMUM_POINTS &&
     !userData.first1kSwaps
   ) {
-    await db.insert(pointsTable).values({
+    await db.insert(schema.pointsTable).values({
       id: `${hash}-dex-aggregator-1k-swaps`,
       userDataId: userData.id,
       userHistoryId: userData.id,
@@ -398,16 +407,18 @@ ponder.on("DexAggregator:RouterSwap", async ({ event, context }) => {
       pointsEarned: pointsMap.ThousandSwaps,
     });
 
-    userData = await db.update(userHistoryTable, { id: userData.id }).set({
-      first1kSwaps: true,
-    });
+    userData = await db
+      .update(schema.userHistoryTable, { id: userData.id })
+      .set({
+        first1kSwaps: true,
+      });
   }
 
   if (
     userData.usdValueOfSwaps >= BIGINT_TEN_THOUSAND * MINIMUM_POINTS &&
     !userData.first10kSwaps
   ) {
-    await db.insert(pointsTable).values({
+    await db.insert(schema.pointsTable).values({
       id: `${hash}-dex-aggregator-10k-swaps`,
       userDataId: userData.id,
       userHistoryId: userData.id,
@@ -421,16 +432,18 @@ ponder.on("DexAggregator:RouterSwap", async ({ event, context }) => {
       pointsEarned: pointsMap.TenThousandSwaps,
     });
 
-    userData = await db.update(userHistoryTable, { id: userData.id }).set({
-      first10kSwaps: true,
-    });
+    userData = await db
+      .update(schema.userHistoryTable, { id: userData.id })
+      .set({
+        first10kSwaps: true,
+      });
   }
 
   if (
     userData.usdValueOfSwaps >= BIGINT_HUNDRED_THOUSAND * MINIMUM_POINTS &&
     !userData.first100kSwaps
   ) {
-    await db.insert(pointsTable).values({
+    await db.insert(schema.pointsTable).values({
       id: `${hash}-dex-aggregator-100k-swaps`,
       userDataId: userData.id,
       userHistoryId: userData.id,
@@ -444,9 +457,11 @@ ponder.on("DexAggregator:RouterSwap", async ({ event, context }) => {
       pointsEarned: pointsMap.HundredThousandSwaps,
     });
 
-    userData = await db.update(userHistoryTable, { id: userData.id }).set({
-      first100kSwaps: true,
-    });
+    userData = await db
+      .update(schema.userHistoryTable, { id: userData.id })
+      .set({
+        first100kSwaps: true,
+      });
   }
 });
 

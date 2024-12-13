@@ -1,4 +1,3 @@
-import { type Context } from "@/generated";
 import {
   QueryWithAmountIn,
   Quote,
@@ -7,6 +6,7 @@ import {
   UserLMData,
   UserVapeStakingData,
 } from "./types";
+import { Context } from "ponder:registry";
 import { StratosphereAbi } from "../abis/StratosphereAbi";
 import {
   addresses,
@@ -17,17 +17,7 @@ import {
   pointsMap,
 } from "./config/constants";
 import axios from "axios";
-import {
-  userDataTable,
-  userHistoryTable,
-  liquidMiningTable,
-  vapeStakingTable,
-  tokenIdDataTable,
-  tokenIdDataWeeklyTable,
-  walletsPerTierTable,
-  allProtocolsTable,
-  pointsTable,
-} from "../ponder.schema";
+import schema from "ponder:schema";
 
 /**
  * Calculates the daily ID based on a given timestamp and the deployed block timestamp of the Stratosphere contract.
@@ -77,13 +67,15 @@ export const handleChainFirstWallet = async (
   event: any
 ): Promise<UserHistory> => {
   let { db } = context;
-  let allProtocols = await db.find(allProtocolsTable, { id: "protocols" });
+  let allProtocols = await db.find(schema.allProtocolsTable, {
+    id: "protocols",
+  });
   if (!allProtocols) {
-    allProtocols = await db.insert(allProtocolsTable).values({
+    allProtocols = await db.insert(schema.allProtocolsTable).values({
       id: "protocols",
       firstWallet: userAddressLowerCase,
     });
-    await db.insert(pointsTable).values({
+    await db.insert(schema.pointsTable).values({
       id: `${userAddressLowerCase}-chain-first-wallet`,
       userDataId: `${userAddressLowerCase}-${chainId}`,
       userHistoryId: `${userAddressLowerCase}-${chainId}`,
@@ -94,7 +86,7 @@ export const handleChainFirstWallet = async (
     });
 
     userData = await db
-      .update(userHistoryTable, { id: userData.id })
+      .update(schema.userHistoryTable, { id: userData.id })
       .set((row) => ({
         chainFirstWallet: true,
       }));
@@ -118,7 +110,7 @@ export async function getOrCreateUserData(
   const { chainId } = context.network;
 
   // Attempt to find existing user data
-  let userHistory = await db.find(userHistoryTable, {
+  let userHistory = await db.find(schema.userHistoryTable, {
     id: `${address}-${chainId}`,
   });
 
@@ -127,7 +119,7 @@ export async function getOrCreateUserData(
 
   // If user data does not exist, create a new entry
   if (!userHistory) {
-    userHistory = await db.insert(userHistoryTable).values({
+    userHistory = await db.insert(schema.userHistoryTable).values({
       id: `${address}-${chainId}`,
       LMSeasons: [],
       depositInVS: false,
@@ -147,7 +139,7 @@ export async function getOrCreateUserData(
       chainFirstWallet: false,
     });
 
-    await db.insert(userDataTable).values({
+    await db.insert(schema.userDataTable).values({
       id: `${address}-${chainId}`,
       linkedToTokenId: tokenId,
       isMainWallet: address === mainWallet,
@@ -183,6 +175,7 @@ export async function queryQuote(
         args: [
           quoteParams.amountIn,
           quoteParams.tokenIn,
+          // @ts-ignore
           assets[network.name].USDC as `0x${string}`,
           quoteParams.maxSteps,
         ],
@@ -221,6 +214,7 @@ export async function getTokenId(
   try {
     tokenId = await client.readContract({
       abi: StratosphereAbi,
+      // @ts-ignore
       address: addresses.Stratosphere![network.name] as `0x${string}`,
       functionName: "tokenIdOf",
       args: [address],
@@ -249,6 +243,7 @@ export async function getTokenIdOwner(
 
   const tokenIdOwner = await client.readContract({
     abi: StratosphereAbi,
+    // @ts-ignore
     address: addresses.Stratosphere![network.name] as `0x${string}`,
     functionName: "ownerOf",
     args: [tokenId],
@@ -337,21 +332,23 @@ export async function getOrUpdateTokenIdData(
   const { db } = context;
   const { chainId, name } = context.network;
 
-  const deployedBlockTimestamp = deployedBlockTimestamps[name].Stratosphere;
+  const deployedBlockTimestamp =
+    deployedBlockTimestamps[name as keyof typeof deployedBlockTimestamps]
+      .Stratosphere;
   const weeklyId = `${tokenId}-${chainId}-${getWeeklyID(
     timestamp,
     deployedBlockTimestamp
   )}`;
 
-  let tokenIdData = await db.find(tokenIdDataTable, {
+  let tokenIdData = await db.find(schema.tokenIdDataTable, {
     id: `${tokenId}-${chainId}`,
   });
-  let tokenIdDataWeekly = await db.find(tokenIdDataWeeklyTable, {
+  let tokenIdDataWeekly = await db.find(schema.tokenIdDataWeeklyTable, {
     id: weeklyId,
   });
 
   if (!tokenIdData) {
-    tokenIdData = await db.insert(tokenIdDataTable).values({
+    tokenIdData = await db.insert(schema.tokenIdDataTable).values({
       id: `${tokenId}-${chainId}`,
       tokenId,
       chainId,
@@ -363,7 +360,7 @@ export async function getOrUpdateTokenIdData(
   }
 
   if (!tokenIdDataWeekly) {
-    tokenIdDataWeekly = await db.insert(tokenIdDataWeeklyTable).values({
+    tokenIdDataWeekly = await db.insert(schema.tokenIdDataWeeklyTable).values({
       id: weeklyId,
       tokenId,
       chainId: chainId,
@@ -375,7 +372,7 @@ export async function getOrUpdateTokenIdData(
   }
 
   tokenIdData = await db
-    .update(tokenIdDataTable, { id: `${tokenId}-${chainId}` })
+    .update(schema.tokenIdDataTable, { id: `${tokenId}-${chainId}` })
     .set((row) => ({
       pointsEarned: row.pointsEarned + pointsEarned,
       pointsClaimed: row.pointsClaimed + pointsClaimed,
@@ -384,7 +381,7 @@ export async function getOrUpdateTokenIdData(
     }));
 
   tokenIdDataWeekly = await db
-    .update(tokenIdDataWeeklyTable, { id: weeklyId })
+    .update(schema.tokenIdDataWeeklyTable, { id: weeklyId })
     .set((row) => ({
       pointsEarned: row.pointsEarned + pointsEarned,
       pointsClaimed: row.pointsClaimed + pointsClaimed,
@@ -405,10 +402,10 @@ export async function getOrUpdateWalletsPerTier(
 
   const id = `${tierId}-${chainId}`;
 
-  let walletsPerTier = await db.find(walletsPerTierTable, { id });
+  let walletsPerTier = await db.find(schema.walletsPerTierTable, { id });
 
   if (!walletsPerTier) {
-    walletsPerTier = await db.insert(walletsPerTierTable).values({
+    walletsPerTier = await db.insert(schema.walletsPerTierTable).values({
       id,
       wallets: [userAddress],
     });
@@ -417,7 +414,7 @@ export async function getOrUpdateWalletsPerTier(
   if (!walletsPerTier.wallets.includes(userAddress)) {
     walletsPerTier.wallets.push(userAddress);
     walletsPerTier = await db
-      .update(walletsPerTierTable, { id })
+      .update(schema.walletsPerTierTable, { id })
       .set((row) => ({
         wallets: row.wallets.concat(userAddress),
       }));
